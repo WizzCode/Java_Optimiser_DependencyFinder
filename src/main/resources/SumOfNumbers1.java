@@ -11,7 +11,7 @@ public int addNumbers(int a, int b) {
     
     int num1 = 25;
     int num2 = 15;
-    int a,b;
+
     for(int i=num1;i<5;i++);
     // create an object of Main
     Main obj = new Main();

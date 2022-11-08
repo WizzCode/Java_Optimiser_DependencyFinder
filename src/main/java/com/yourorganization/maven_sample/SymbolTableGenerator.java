@@ -14,6 +14,7 @@ import com.github.javaparser.utils.Log;
 import com.github.javaparser.utils.SourceRoot;
 
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -64,7 +65,9 @@ public class SymbolTableGenerator {
 
     }
 
-    public void variableDependencyInput() {
+    public VariableAttributes variableDependencyInput() {
+
+        VariableAttributes obj1= new VariableAttributes();
         for (TypeDeclaration typeDec : cu.getTypes()) {
             List<BodyDeclaration> members = typeDec.getMembers();
             if (members != null) {
@@ -72,7 +75,7 @@ public class SymbolTableGenerator {
                     if (member.isMethodDeclaration()) {
                         MethodDeclaration function = (MethodDeclaration) member;
                         System.out.println("Method name: " + function.getNameAsString());
-                        /* How to get the method variables now? */
+
                     }
                 }
             }
@@ -80,10 +83,33 @@ public class SymbolTableGenerator {
         cu.findAll(VariableDeclarator.class).forEach(variable -> {
             String rightSide;
             System.out.println("Name " + variable.getNameAsString());
+            obj1.variable_array.add(variable.getNameAsString());//adding to variable array
+
+
             System.out.println("Type " + variable.getTypeAsString());
 //            System.out.println("Right side "+variable.getInitializer());
             if (variable.getInitializer().isPresent()) {
                 rightSide = variable.getInitializer().get().toString();
+                ArrayList<String> dependents = new ArrayList<String>();
+                for (String val: rightSide.split(" "))
+                {
+                    if (isStringOnlyAlphabet(val))
+                    {
+                        if(!dependents.contains(val))
+                        {
+                            dependents.add(val);
+                        }
+                        if(!obj1.right.add(val))
+                        {
+                            obj1.right.add(val);
+                        }
+                       // this could add the same variable appearing twice ,
+                        //two times
+                    }
+                }
+             obj1.dependence_dict.put(variable.getNameAsString(),dependents);
+                    // printing the final value.;
+
                 System.out.println("Right side " + rightSide); // a
                 System.out.println("Initialiser Type " + variable.getInitializer().get().getClass().getName());
             }
@@ -94,6 +120,13 @@ public class SymbolTableGenerator {
                 CodeGenerationUtils.mavenModuleRoot(SymbolTableGenerator.class)
                         // appended with a path to "output"
                         .resolve(Paths.get("output")));
-    }
 
+      return obj1;
+    }
+    public static boolean isStringOnlyAlphabet(String str)
+    {
+
+        return ((str != null) && (!str.equals(""))
+                && (str.matches("^[a-zA-Z]*$")));
+    }
 }
