@@ -112,6 +112,69 @@ public class VariableDependency {
     }
 
     public void variableDependencyMatrix(){
+        int noVars = variable_array.size();
+        boolean depMatrix[][] = new boolean[noVars][noVars];
+        ArrayList<String> graphNodes = new ArrayList<>();
+        for (String var: variable_array){
+            graphNodes.add(var);
+        }
+        String parent="", var="";
+        if (graphNodes.size()!=0){
+            parent = graphNodes.remove(0);
+            var = parent;
+        }
+        while(graphNodes.size()!=0){
+            //checking childs of parent
+            var = parent;
+            ArrayList<String> childs = dependence_dict.get(var);
+
+            if (childs!=null){
+                String child="";
+                for(String c : childs){
+                    if(graphNodes.contains(c)){
+                        graphNodes.remove(c);
+                        child = c;
+                    }
+                    depMatrix[variable_array.indexOf(c)][variable_array.indexOf(var)]=true;
+                }
+                if(child==""){
+                    parent = graphNodes.remove(0);
+                }else{
+                    parent = child;
+                }
+            }
+
+            //checking parents of var
+            else{
+                boolean flag = false;
+                for (String key: dependence_dict.keySet()){
+                    if(dependence_dict.get(key).contains(var)){
+                        String child = var;
+                        parent = key;
+                        if (graphNodes.contains(parent)){
+                            graphNodes.remove(parent);
+                        }
+                        depMatrix[variable_array.indexOf(child)][variable_array.indexOf(parent)]=true;
+                        flag = true;
+                        break;
+                    }
+                }
+                if(!flag){
+                    if(graphNodes.contains(var)){
+                        graphNodes.remove(var);
+                    }
+                    parent = graphNodes.remove(0);
+                }
+            }
+        }
+
+        for (int i = 0; i < depMatrix.length; i++){
+            // Loop through all elements of current row
+            for (int j = 0; j < depMatrix[i].length; j++){
+                System.out.print(depMatrix[i][j] + " ");
+            }
+            System.out.println();
+        }
 
     }
 }
