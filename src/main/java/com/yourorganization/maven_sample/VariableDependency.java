@@ -167,13 +167,24 @@ public class VariableDependency {
                 }
             }
         }
-
+        
+        System.out.println("Generating Depedency Matrix.......\n");
+        System.out.println("If the value of the matrix at a position\nwhere the row denotes variable1 and the column denotes variable2 is 1 \nthen variable1 is the child of variable2 or variable1 is dependent on variable2\n");
+        System.out.println("----------------------------------Depenedency Matrix---------------------------------------\n");
+   
+        System.out.printf("%-5s", "");
+        for (int i = 0; i < depMatrix[0].length; i++) {
+        System.out.printf("%-5s", variable_array.get(i));
+        }
+        System.out.println();
         for (int i = 0; i < depMatrix.length; i++){
             // Loop through all elements of current row
+            System.out.printf("%-5s", variable_array.get(i));
             for (int j = 0; j < depMatrix[i].length; j++){
-                System.out.print(depMatrix[i][j] + " ");
+                if(depMatrix[i][j]==false) System.out.printf("%-5d",0);
+                else System.out.printf("%-5d",1);
             }
-            System.out.println();
+            System.out.println("\n");
         }
 
     }
