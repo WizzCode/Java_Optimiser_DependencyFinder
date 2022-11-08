@@ -32,7 +32,7 @@ public class VariableDependency {
         System.out.println("dependence dict ");
         System.out.println(Arrays.asList(obj2.dependence_dict));
 
-        obj.parseInputCode("SumOfNumbers1.java");
+        //obj.parseInputCode("SumOfNumbers1.java");
         obj.variableDependencyInput();
              variable_array=obj.variableDependencyInput().variable_array;
               right=obj.variableDependencyInput().right;

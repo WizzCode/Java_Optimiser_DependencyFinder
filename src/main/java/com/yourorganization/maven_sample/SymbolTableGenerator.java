@@ -107,7 +107,7 @@ public class SymbolTableGenerator {
                         //two times
                     }
                 }
-             obj1.dependence_dict.put(variable.getNameAsString(),dependents);
+                if(!dependents.isEmpty()) obj1.dependence_dict.put(variable.getNameAsString(),dependents);
                     // printing the final value.;
 
                 System.out.println("Right side " + rightSide); // a
