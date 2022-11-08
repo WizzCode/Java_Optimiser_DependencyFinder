@@ -20,21 +20,24 @@ import java.util.List;
  * Some code that uses JavaParser.
  */
 public class SymbolTableGenerator {
-    public static void main(String[] args) {
+    //    public static void main(String[] args) {
+    public CompilationUnit cu;
+    public SourceRoot sourceRoot;
+
+    public void parseInputCode(String filename) {
         // JavaParser has a minimal logging class that normally logs nothing.
         // Let's ask it to write to standard out:
         Log.setAdapter(new Log.StandardOutStandardErrorAdapter());
-        
+
         // SourceRoot is a tool that read and writes Java files from packages on a certain root directory.
         // In this case the root directory is found by taking the root from the current Maven module,
         // with src/main/resources appended.
-        SourceRoot sourceRoot = new SourceRoot(CodeGenerationUtils.mavenModuleRoot(SymbolTableGenerator.class).resolve("src/main/resources"));
+        sourceRoot = new SourceRoot(CodeGenerationUtils.mavenModuleRoot(SymbolTableGenerator.class).resolve("src/main/resources"));
 
         // Our sample is in the root of this directory, so no package name.
-        CompilationUnit cu = sourceRoot.parse("", "SumOfNumbers1.java");
+        cu = sourceRoot.parse("", filename);
+        Log.info("Compilation Unit generated");
 
-        Log.info("List of Symbols!");
-        
         cu.accept(new ModifierVisitor<Void>() {
             /**
              * For every if-statement, see if it has a comparison using "!=".
@@ -58,6 +61,10 @@ public class SymbolTableGenerator {
                 return super.visit(n, arg);
             }
         }, null);
+
+    }
+
+    public void variableDependencyInput() {
         for (TypeDeclaration typeDec : cu.getTypes()) {
             List<BodyDeclaration> members = typeDec.getMembers();
             if (members != null) {
@@ -72,13 +79,13 @@ public class SymbolTableGenerator {
         }
         cu.findAll(VariableDeclarator.class).forEach(variable -> {
             String rightSide;
-            System.out.println("Name "+variable.getNameAsString());
-            System.out.println("Type "+variable.getTypeAsString());
+            System.out.println("Name " + variable.getNameAsString());
+            System.out.println("Type " + variable.getTypeAsString());
 //            System.out.println("Right side "+variable.getInitializer());
             if (variable.getInitializer().isPresent()) {
-                rightSide=variable.getInitializer().get().toString();
-                System.out.println("Right side "+rightSide); // a
-                System.out.println("Initialiser Type "+variable.getInitializer().get().getClass().getName());
+                rightSide = variable.getInitializer().get().toString();
+                System.out.println("Right side " + rightSide); // a
+                System.out.println("Initialiser Type " + variable.getInitializer().get().getClass().getName());
             }
         });
         // This saves all the files we just read to an output directory.  
@@ -88,4 +95,5 @@ public class SymbolTableGenerator {
                         // appended with a path to "output"
                         .resolve(Paths.get("output")));
     }
+
 }
