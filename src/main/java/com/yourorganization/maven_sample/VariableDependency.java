@@ -170,7 +170,7 @@ public class VariableDependency {
         }
         
         System.out.println("Generating Depedency Matrix.......\n");
-        System.out.println("If the value of the matrix at a position\nwhere the row denotes variable1 and the column denotes variable2 is 1 \nthen variable1 is the child of variable2 or variable1 is dependent on variable2\n");
+        System.out.println("If the value of the matrix at a position\nwhere the row denotes variable1 and the column denotes variable2 is 1 \nthen variable2 is dependent on variable1\n");
         System.out.println("----------------------------------Depenedency Matrix---------------------------------------\n");
    
         System.out.printf("%-5s", "");
