@@ -7,12 +7,14 @@ public class SampleProgramNew{
         int val1= 4;
         int val2 = obj.f3(val1);
         System.out.println(val2);
+        obj.f4();
+        System.out.println(val2);
     }
 }
 
 class A {
 String abc="class A variable";
-
+int val2=3;
 public void f1(){
     String abc;
     abc = "f1 function variable outside if";
@@ -20,6 +22,7 @@ public void f1(){
     if (true){
           abc = "f1 function variable modified inside if";
     }
+    abc="new";
     System.out.println(abc); 
 }
 
@@ -29,8 +32,13 @@ public void f2(){
 }
 
 public int f3(int val1){
-     int val2 = val1 +2;
+     int val2;
+     val2=val1 +2;
      return val2;
+}
+public void f4(){
+     val2=val2+2;
+     
 }
 
 }

@@ -19,7 +19,10 @@ import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
@@ -177,26 +180,41 @@ public class SymbolTableGenerator {
             System.out.println("Class Variables");
             for(FieldDeclaration ff:cd.getFields())
     {
-        System.out.println(cd.getNameAsString()+"."+ff.getVariable(0).getName());
+        System.out.println("Qualified Name: " +cd.getNameAsString()+"."+ff.getVariable(0).getName());
     }
     
     for (MethodDeclaration method : cd.getMethods()) {
         System.out.println("Method");
-        System.out.println(cd.getNameAsString()+"."+method.getNameAsString()); 
+        System.out.println("Qualified Name: " +cd.getNameAsString()+"."+method.getNameAsString()); 
         System.out.println("Method Variables");
         method.getBody().ifPresent(blockStatement -> {
                     
             for( VariableDeclarator variable : blockStatement.findAll(VariableDeclarator.class)) {
-
+                
+                System.out.println("Declared Variable: "+variable.getNameAsString());
+                if(variable.getInitializer().isPresent()) System.out.println("Initialiser: "+variable.getInitializer().get());
                 for (NameExpr nameExp : blockStatement.findAll(NameExpr.class)) {
-                           
                     if (nameExp.getNameAsString().equals(variable.getNameAsString())) {
                             
-                        System.out.println(cd.getNameAsString()+"."+method.getNameAsString()+"."+nameExp.getNameAsString());
+                        System.out.println("Qualified Name: " +cd.getNameAsString()+"."+method.getNameAsString()+"."+nameExp.getNameAsString());
                         Node parentNode = nameExp.getParentNode().get();
-                        System.out.println(parentNode); 
+                        System.out.println("Variable used in Expression: "+parentNode);
+                        System.out.println("Expression type: "+parentNode.getClass());
+                        if (parentNode instanceof AssignExpr) {
+                            
+                            Expression left = ((AssignExpr)parentNode).getTarget();  
+                            Expression right = ((AssignExpr)parentNode).getValue();
+                            System.out.println("LHS: "+left); 
+                            System.out.println("RHS: "+right); 
+                        }
+                                           
                     }
+                    
+                   
                 }
+                
+               
+                
             }
         });
     }
