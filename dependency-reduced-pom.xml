@@ -18,7 +18,7 @@
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <transformers>
                 <transformer>
-                  <mainClass>com.yourorganization.maven_sample.LogicPositivizer</mainClass>
+                  <mainClass>com.yourorganization.maven_sample.Dependency</mainClass>
                 </transformer>
               </transformers>
             </configuration>
