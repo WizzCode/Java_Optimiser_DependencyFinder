@@ -1,6 +1,7 @@
 package com.yourorganization.maven_sample;
 
 
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 
 
@@ -10,18 +11,22 @@ public class VariableDependency {
     public ArrayList<String> variable_array=new ArrayList<String>();
     public ArrayList<String> right=new ArrayList<String>();
     public HashMap<String,ArrayList<String>> dependence_dict = new HashMap<String,ArrayList<String>>();
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
 
         VariableDependency vdobj = new VariableDependency();
         vdobj.vdInput();
         vdobj.variableDependencyAlgo();
         vdobj.variableDependencyMatrix();
+
+        
     }
 
-    public void vdInput(){
+    public void vdInput() throws FileNotFoundException{
         SymbolTableGenerator obj = new SymbolTableGenerator();
 
-        obj.parseInputCode("SampleProgram.java");
+//        obj.parseInputCode("SampleProgramNew.java");
+        obj.symbolsolverparsing();
+        System.out.println("CU"+obj.compilationUnit);
         VariableAttributes obj2=  obj.variableDependencyInput();
         System.out.println("list of all variables ");
         for (int i = 0; i < obj2.variable_array.size();i++)
@@ -38,27 +43,6 @@ public class VariableDependency {
             variable_array=obj2.variable_array;
               right=obj2.right;
              dependence_dict=obj2.dependence_dict;
-
-//variable_array={x,b,c,a,y,z,p,r,q}
-//right={b,c,x,a,y,p}
-//dependence_dict={a:b,c,y:a,x,z:y,q:p}
-
-//        variable_array = new ArrayList<>(Arrays.asList("x","b","c","a","y","z","p","r","q"));
-//        right = new ArrayList<>(Arrays.asList("b","c","x","a","y","p"));
-//        ArrayList<String> value=new ArrayList<String>();
-//        value.add("b");
-//        value.add("c");
-//        dependence_dict.put("a",value);
-//        value=new ArrayList<String>();
-//        value.add("a");
-//        value.add("x");
-//        dependence_dict.put("y",value);
-//        value=new ArrayList<String>();
-//        value.add("y");
-//        dependence_dict.put("z",value);
-//        value=new ArrayList<String>();
-//        value.add("p");
-//        dependence_dict.put("q",value);
 
 
     }
@@ -189,4 +173,5 @@ public class VariableDependency {
         }
 
     }
+    
 }
