@@ -178,6 +178,8 @@ public class SymbolTableGenerator {
     
     
  public void attributes(){
+
+        JavaSymbolSolverUtils ssObj = new JavaSymbolSolverUtils();
         
         System.out.println("-------------------------------");
         
@@ -191,18 +193,20 @@ public class SymbolTableGenerator {
        if(ff.getVariable(0).getInitializer().isPresent()){
                     
                     Node parentNode = ff.getVariable(0).getInitializer().get();
-                     if (parentNode instanceof MethodCallExpr) { //call for qualified name
-                            ResolvedMethodDeclaration methodDeclaration = ((MethodCallExpr)parentNode).resolve();
-                             System.out.println("Method Qualified Name: " + methodDeclaration.getQualifiedName());
-                        }    
+                     if (parentNode instanceof MethodCallExpr) {
+                            String name = ssObj.getQualifiedName(parentNode);
+                            System.out.println("Method Qualified Name: " + name);
+                     }
                      
-                     else if(parentNode instanceof BinaryExpr){ 
-                                System.out.println(parentNode.getChildNodes().getClass());
-                                ArrayList<Node> subExprList = new ArrayList<>(parentNode.getChildNodes());
-                                 for(int i =0;i<subExprList.size();i++){
-                                    //call for qualified name
-                                }
-                            }
+                     else if(parentNode instanceof BinaryExpr){
+                         String name = "";
+                        System.out.println(parentNode.getChildNodes().getClass());
+                        ArrayList<Node> subExprList = new ArrayList<>(parentNode.getChildNodes());
+                         for(int i =0;i<subExprList.size();i++){
+                            name = ssObj.getQualifiedName(subExprList.get(i));
+                            System.out.println(name);
+                        }
+                    }
                 }
         
     }
@@ -220,21 +224,23 @@ public class SymbolTableGenerator {
             
                     
             for( VariableDeclarator variable : blockStatement.findAll(VariableDeclarator.class)) {
-             
-
+//
                 if(variable.getInitializer().isPresent()){
-                    
+
                     Node parentNode = variable.getInitializer().get();
-                     if (parentNode instanceof MethodCallExpr) { //call for qualified name
-                            ResolvedMethodDeclaration methodDeclaration = ((MethodCallExpr)parentNode).resolve();
-                             System.out.println("Method Qualified Name: " + methodDeclaration.getQualifiedName());
+                     if (parentNode instanceof MethodCallExpr) {
+                            String name = ssObj.getQualifiedName(parentNode);
+                            System.out.println("Method Qualified Name: " + name);
                         }    
-                     
-                     else if(parentNode instanceof BinaryExpr){ 
+
+
+                     else if(parentNode instanceof BinaryExpr){
+                         String name = "";
                                 System.out.println(parentNode.getChildNodes().getClass());
                                 ArrayList<Node> subExprList = new ArrayList<>(parentNode.getChildNodes());
                                  for(int i =0;i<subExprList.size();i++){
-                                    //call for qualified name
+                                     name = ssObj.getQualifiedName(subExprList.get(i));
+                                     System.out.println(name);
                                 }
                              
                             }
@@ -246,24 +252,29 @@ public class SymbolTableGenerator {
                         System.out.println("Qualified Name: " +cd.getNameAsString()+"."+method.getNameAsString()+"."+nameExp.getNameAsString());
                         Node parentNode = nameExp.getParentNode().get();
                         System.out.println("Variable used in Expression: "+parentNode);
-                        System.out.println("Expression type: "+parentNode.getClass());
-                        if (parentNode instanceof MethodCallExpr) { //call for qualified name
-                            ResolvedMethodDeclaration methodDeclaration = ((MethodCallExpr)parentNode).resolve();
-                            System.out.println("Method Qualified Name: " + methodDeclaration.getQualifiedName());
+//                        System.out.println("Expression type: "+parentNode.getClass());
+                        if (parentNode instanceof MethodCallExpr) {
+                            String name = ssObj.getQualifiedName(parentNode);
+                            System.out.println("Method Qualified Name: " + name);
                         }
                         
                         
                         else if (parentNode instanceof AssignExpr) {
+                            String name = "";
                              
                             Expression left = ((AssignExpr)parentNode).getTarget();  
                             Expression right = ((AssignExpr)parentNode).getValue();
-                            System.out.println("LHS: "+left); //call for qualified name
+                            System.out.println("LHS: "+left);
+                            name = ssObj.getQualifiedName(left);
+                            System.out.println("Left Qualified Name: " + name);
+
                             System.out.println("RHS: "+right); 
                             if(right instanceof BinaryExpr){ 
-                                System.out.println(right.getChildNodes().getClass());
+//                                System.out.println(right.getChildNodes().getClass());
                                 ArrayList<Node> subExprList = new ArrayList<>(right.getChildNodes());
                                 for(int i =0;i<subExprList.size();i++){
-                                    //call for qualified name
+                                    name = ssObj.getQualifiedName(subExprList.get(i));
+                                    System.out.println(name);
                                 }
                             }
                         }
