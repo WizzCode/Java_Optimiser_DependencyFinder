@@ -171,7 +171,48 @@ public class VariableDependency {
             }
             System.out.println("\n");
         }
-
+TransitivityMatrix(depMatrix);
     }
-    
+
+    public void TransitivityMatrix(boolean depMatrix[][])
+    {
+for(int i=0;i<depMatrix[0].length;i++) // i variable iterates through columns
+{
+    for(int j=0;j<depMatrix.length;j++) // j variable iterates through rows
+    {
+if((depMatrix[j][i]==true))
+{
+  boolean lenarr[]  =depMatrix[i];
+  for(int k=0;k<lenarr.length;k++)
+  {
+      if(lenarr[k]==true)
+      {
+          depMatrix[j][k]=true;
+      }
+  }
+
+}
+    }
+}
+
+//print new matrix here
+
+        System.out.println("---------Transitive Dependency Matrix-------------");
+System.out.println(" ");
+        System.out.printf("%-5s", "");
+        for (int i = 0; i < depMatrix[0].length; i++) {
+            System.out.printf("%-5s", variable_array.get(i));
+        }
+        System.out.println();
+        for (int i = 0; i < depMatrix.length; i++){
+            // Loop through all elements of current row
+            System.out.printf("%-5s", variable_array.get(i));
+            for (int j = 0; j < depMatrix[i].length; j++){
+                if(depMatrix[i][j]==false) System.out.printf("%-5d",0);
+                else System.out.printf("%-5d",1);
+            }
+            System.out.println("\n");
+        }
+    }
+
 }
