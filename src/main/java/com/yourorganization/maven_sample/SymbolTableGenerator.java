@@ -24,9 +24,11 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.PrimitiveType.Primitive;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedTypeDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
 import com.github.javaparser.resolution.types.ResolvedPrimitiveType;
 import com.github.javaparser.resolution.types.ResolvedType;
@@ -180,26 +182,33 @@ public class SymbolTableGenerator {
  public void attributes(){
 
         JavaSymbolSolverUtils ssObj = new JavaSymbolSolverUtils();
+        ProgramAttributes paObj= new ProgramAttributes();
         
         System.out.println("-------------------------------");
         
         for (ClassOrInterfaceDeclaration cd : compilationUnit.findAll(ClassOrInterfaceDeclaration.class)) {
             System.out.println("Class "+cd.getNameAsString()); 
             System.out.println("Class Variables");
+            if(!paObj.attribute_array.contains(cd.getNameAsString()) )paObj.attribute_array.add(cd.getNameAsString()); //class
             for(FieldDeclaration ff:cd.getFields()) 
     {
-        System.out.println("Qualified Name: " +cd.getNameAsString()+"."+ff.getVariable(0).getName());
-      
+       System.out.println("Qualified Name: " +cd.getNameAsString()+"."+ff.getVariable(0).getName());
+       if(!paObj.attribute_array.contains(cd.getNameAsString()+"."+ff.getVariable(0).getName()) )paObj.attribute_array.add(cd.getNameAsString()+"."+ff.getVariable(0).getName()); // class variable
        if(ff.getVariable(0).getInitializer().isPresent()){
                     
                     Node parentNode = ff.getVariable(0).getInitializer().get();
+                    String name ="";
                      if (parentNode instanceof MethodCallExpr) {
-                            String name = ssObj.getQualifiedName(parentNode);
+                            name = ssObj.getQualifiedName(parentNode);
                             System.out.println("Method Qualified Name: " + name);
                      }
                      
+                     else if(parentNode instanceof ObjectCreationExpr){
+                         System.out.println("Qualified name of class whose obj is created: "+ ff.getVariable(0).getType());
+                     }
+                     
                      else if(parentNode instanceof BinaryExpr){
-                         String name = "";
+                         name = "";
                         System.out.println(parentNode.getChildNodes().getClass());
                         ArrayList<Node> subExprList = new ArrayList<>(parentNode.getChildNodes());
                          for(int i =0;i<subExprList.size();i++){
@@ -207,6 +216,12 @@ public class SymbolTableGenerator {
                             System.out.println(name);
                         }
                     }
+                     else{
+                         name = ssObj.getQualifiedName(parentNode);
+                         System.out.println(name);
+                     }
+                     
+                    if(!name.equals("") && !paObj.attribute_array.contains(name) ) paObj.attribute_array.add(name); 
                 }
         
     }
@@ -216,6 +231,7 @@ public class SymbolTableGenerator {
     for (MethodDeclaration method : cd.getMethods()) {
         System.out.println("Method");
         System.out.println("Qualified Name: " +cd.getNameAsString()+"."+method.getNameAsString()); 
+        if(!paObj.attribute_array.contains(cd.getNameAsString()+"."+method.getNameAsString()) )paObj.attribute_array.add(cd.getNameAsString()+"."+method.getNameAsString()); 
         System.out.println("Method Variables");
         
        
@@ -224,41 +240,59 @@ public class SymbolTableGenerator {
             
                     
             for( VariableDeclarator variable : blockStatement.findAll(VariableDeclarator.class)) {
-//
+             
                 if(variable.getInitializer().isPresent()){
-
+                   
+                    String lhsDecname = cd.getNameAsString()+"."+method.getNameAsString() + "."+variable.getNameAsString();
+                    if(!lhsDecname .equals("") && !paObj.attribute_array.contains(lhsDecname ) ) paObj.attribute_array.add(lhsDecname );
+                    System.out.println("Qualified name LHS: "+ lhsDecname);
+                    
                     Node parentNode = variable.getInitializer().get();
+                    String name ="";
+                    
                      if (parentNode instanceof MethodCallExpr) {
-                            String name = ssObj.getQualifiedName(parentNode);
+                            name = ssObj.getQualifiedName(parentNode);
                             System.out.println("Method Qualified Name: " + name);
                         }    
 
-
+                     else if(parentNode instanceof ObjectCreationExpr){
+                         System.out.println("Qualified name of class whose obj is created: "+ variable.getType());
+                     }
                      else if(parentNode instanceof BinaryExpr){
-                         String name = "";
+                         name = "";
                                 System.out.println(parentNode.getChildNodes().getClass());
                                 ArrayList<Node> subExprList = new ArrayList<>(parentNode.getChildNodes());
                                  for(int i =0;i<subExprList.size();i++){
+                                     System.out.println(subExprList.get(i).getClass());
                                      name = ssObj.getQualifiedName(subExprList.get(i));
+                                     if(!name.contains(".") && !name.equals("")) name=cd.getNameAsString()+"."+method.getNameAsString() + "."+name;
                                      System.out.println(name);
                                 }
                              
                             }
+                     else{
+                         name = ssObj.getQualifiedName(parentNode);
+                         System.out.println(name);
+                     }
+                     if(!name .equals("") && !paObj.attribute_array.contains(name ) ) paObj.attribute_array.add(name );
                 }
                 for (NameExpr nameExp : blockStatement.findAll(NameExpr.class)) {
                     
-                    if (nameExp.getNameAsString().equals(variable.getNameAsString())) {
-                       
-                        System.out.println("Qualified Name: " +cd.getNameAsString()+"."+method.getNameAsString()+"."+nameExp.getNameAsString());
+                    if (nameExp.getNameAsString().equals(variable.getNameAsString())) {                       
+//                        System.out.println("Qualified Name: " +cd.getNameAsString()+"."+method.getNameAsString()+"."+nameExp.getNameAsString());
                         Node parentNode = nameExp.getParentNode().get();
                         System.out.println("Variable used in Expression: "+parentNode);
 //                        System.out.println("Expression type: "+parentNode.getClass());
                         if (parentNode instanceof MethodCallExpr) {
                             String name = ssObj.getQualifiedName(parentNode);
                             System.out.println("Method Qualified Name: " + name);
+                            if(!name.equals("") && !paObj.attribute_array.contains(name) ) paObj.attribute_array.add(name);
                         }
                         
-                        
+                        else if(parentNode instanceof ObjectCreationExpr){
+                         System.out.println("Qualified name of class whose obj is created: "+ variable.getType());
+                         if(!variable.getType().toString().equals("") && !paObj.attribute_array.contains(variable.getType().toString()) ) paObj.attribute_array.add(variable.getType().toString());
+                     }
                         else if (parentNode instanceof AssignExpr) {
                             String name = "";
                              
@@ -266,18 +300,26 @@ public class SymbolTableGenerator {
                             Expression right = ((AssignExpr)parentNode).getValue();
                             System.out.println("LHS: "+left);
                             name = ssObj.getQualifiedName(left);
+                            if(!name.contains(".")&& !name.equals("")) name=cd.getNameAsString()+"."+method.getNameAsString() + "."+name;
                             System.out.println("Left Qualified Name: " + name);
 
                             System.out.println("RHS: "+right); 
                             if(right instanceof BinaryExpr){ 
-//                                System.out.println(right.getChildNodes().getClass());
+//                               
                                 ArrayList<Node> subExprList = new ArrayList<>(right.getChildNodes());
                                 for(int i =0;i<subExprList.size();i++){
                                     name = ssObj.getQualifiedName(subExprList.get(i));
+                                     if(!name.contains(".") && !name.equals("")) name=cd.getNameAsString()+"."+method.getNameAsString() + "."+name;
                                     System.out.println(name);
                                 }
                             }
+                            if(!name.equals("") && !paObj.attribute_array.contains(name) ) paObj.attribute_array.add(name);
                         }
+                        else{
+                         String name = ssObj.getQualifiedName(parentNode);
+                         System.out.println(name);
+                         if(!name.equals("") && !paObj.attribute_array.contains(name) ) paObj.attribute_array.add(name);
+                     }
                                            
                     }
                     
@@ -290,13 +332,13 @@ public class SymbolTableGenerator {
         });
     }
 }
-        System.out.println("-------------------------------");
+        System.out.println("-------------Attribute array------------------");
         
         
 
 
         
-       
+       for(int i=0;i<paObj.attribute_array.size();i++) System.out.println(paObj.attribute_array.get(i));
         
          
     }

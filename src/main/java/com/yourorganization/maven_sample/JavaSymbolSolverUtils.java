@@ -21,6 +21,7 @@ import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.*;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.resolution.declarations.*;
+import com.github.javaparser.resolution.types.ResolvedType;
 
 public class JavaSymbolSolverUtils {
     //filePath should be of the form "src/main/resources/FileName.java"
@@ -53,11 +54,19 @@ public class JavaSymbolSolverUtils {
                 return nodeQualifiedName;
             }
             return ((NameExpr) node).getNameAsString();
+            
         }
 
         else if(node instanceof MethodCallExpr){
             ResolvedMethodDeclaration methodDeclaration = ((MethodCallExpr) node).resolve();
             return methodDeclaration.getQualifiedName();
+        }
+        
+        else if(node instanceof FieldAccessExpr){
+            ResolvedType resolvedType = ((FieldAccessExpr)node).getScope().calculateResolvedType();
+            String nodeQualifiedName = resolvedType.describe() + "." + ((FieldAccessExpr) node).getNameAsString();
+            return nodeQualifiedName;
+            
         }
 
         return "";
