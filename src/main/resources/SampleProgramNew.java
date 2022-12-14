@@ -1,15 +1,20 @@
-public class SampleProgramNew{
+public class SampleProgramNew{ 
     public static void main(String args[]){
         A obj = new A();
         System.out.println(obj.abc);
+        String a = "5"+obj.abc;
+        System.out.println(a);
         obj.f1();
         obj.f2();
         int val1= 4;
         int val2 = obj.f3(val1);
+        int val3;
+        val3 = 2+obj.f3(val1);
         System.out.println(val2);
         obj.f4();
         System.out.println(val2);
     }
+   
 }
 
 class A {
@@ -34,6 +39,7 @@ public void f2(){
 public int f3(int val1){
      int val2;
      val2=val1 +2;
+     val2=val2+2;
      return val2;
 }
 public void f4(){
