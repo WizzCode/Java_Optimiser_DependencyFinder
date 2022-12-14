@@ -4,3 +4,4 @@ target
 output
 .github
 .travis.yml
+dependency-reduced-pom.xml

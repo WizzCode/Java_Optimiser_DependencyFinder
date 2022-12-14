@@ -21,20 +21,29 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.type.PrimitiveType;
+import com.github.javaparser.ast.type.PrimitiveType.Primitive;
+import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
+import com.github.javaparser.resolution.types.ResolvedPrimitiveType;
+import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
+import java.lang.ProcessBuilder.Redirect.Type;
 
 
 
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -161,51 +170,102 @@ public class SymbolTableGenerator {
                 System.out.println("Initialiser Type " + variable.getInitializer().get().getClass().getName());
             }
         });
-        // This saves all the files we just read to an output directory.  
-//        sourceRoot.saveAll(
-//                // The path of the Maven module/project which contains the LogicPositivizer class.
-//                CodeGenerationUtils.mavenModuleRoot(SymbolTableGenerator.class)
-//                        // appended with a path to "output"
-//                        .resolve(Paths.get("output")));
+
 
       return obj1;
     }
     
-    public void attributes(){
-
+    
+    
+ public void attributes(){
+        
         System.out.println("-------------------------------");
         
         for (ClassOrInterfaceDeclaration cd : compilationUnit.findAll(ClassOrInterfaceDeclaration.class)) {
             System.out.println("Class "+cd.getNameAsString()); 
             System.out.println("Class Variables");
-            for(FieldDeclaration ff:cd.getFields())
+            for(FieldDeclaration ff:cd.getFields()) 
     {
         System.out.println("Qualified Name: " +cd.getNameAsString()+"."+ff.getVariable(0).getName());
+      
+       if(ff.getVariable(0).getInitializer().isPresent()){
+                    
+                    Node parentNode = ff.getVariable(0).getInitializer().get();
+                     if (parentNode instanceof MethodCallExpr) { //call for qualified name
+                            ResolvedMethodDeclaration methodDeclaration = ((MethodCallExpr)parentNode).resolve();
+                             System.out.println("Method Qualified Name: " + methodDeclaration.getQualifiedName());
+                        }    
+                     
+                     else if(parentNode instanceof BinaryExpr){ 
+                                System.out.println(parentNode.getChildNodes().getClass());
+                                ArrayList<Node> subExprList = new ArrayList<>(parentNode.getChildNodes());
+                                 for(int i =0;i<subExprList.size();i++){
+                                    //call for qualified name
+                                }
+                            }
+                }
+        
     }
+       
+            
     
     for (MethodDeclaration method : cd.getMethods()) {
         System.out.println("Method");
         System.out.println("Qualified Name: " +cd.getNameAsString()+"."+method.getNameAsString()); 
         System.out.println("Method Variables");
+        
+       
+        
         method.getBody().ifPresent(blockStatement -> {
+            
                     
             for( VariableDeclarator variable : blockStatement.findAll(VariableDeclarator.class)) {
-                
-                System.out.println("Declared Variable: "+variable.getNameAsString());
-                if(variable.getInitializer().isPresent()) System.out.println("Initialiser: "+variable.getInitializer().get());
+             
+
+                if(variable.getInitializer().isPresent()){
+                    
+                    Node parentNode = variable.getInitializer().get();
+                     if (parentNode instanceof MethodCallExpr) { //call for qualified name
+                            ResolvedMethodDeclaration methodDeclaration = ((MethodCallExpr)parentNode).resolve();
+                             System.out.println("Method Qualified Name: " + methodDeclaration.getQualifiedName());
+                        }    
+                     
+                     else if(parentNode instanceof BinaryExpr){ 
+                                System.out.println(parentNode.getChildNodes().getClass());
+                                ArrayList<Node> subExprList = new ArrayList<>(parentNode.getChildNodes());
+                                 for(int i =0;i<subExprList.size();i++){
+                                    //call for qualified name
+                                }
+                             
+                            }
+                }
                 for (NameExpr nameExp : blockStatement.findAll(NameExpr.class)) {
+                    
                     if (nameExp.getNameAsString().equals(variable.getNameAsString())) {
-                            
+                       
                         System.out.println("Qualified Name: " +cd.getNameAsString()+"."+method.getNameAsString()+"."+nameExp.getNameAsString());
                         Node parentNode = nameExp.getParentNode().get();
                         System.out.println("Variable used in Expression: "+parentNode);
                         System.out.println("Expression type: "+parentNode.getClass());
-                        if (parentNode instanceof AssignExpr) {
-                            
+                        if (parentNode instanceof MethodCallExpr) { //call for qualified name
+                            ResolvedMethodDeclaration methodDeclaration = ((MethodCallExpr)parentNode).resolve();
+                            System.out.println("Method Qualified Name: " + methodDeclaration.getQualifiedName());
+                        }
+                        
+                        
+                        else if (parentNode instanceof AssignExpr) {
+                             
                             Expression left = ((AssignExpr)parentNode).getTarget();  
                             Expression right = ((AssignExpr)parentNode).getValue();
-                            System.out.println("LHS: "+left); 
+                            System.out.println("LHS: "+left); //call for qualified name
                             System.out.println("RHS: "+right); 
+                            if(right instanceof BinaryExpr){ 
+                                System.out.println(right.getChildNodes().getClass());
+                                ArrayList<Node> subExprList = new ArrayList<>(right.getChildNodes());
+                                for(int i =0;i<subExprList.size();i++){
+                                    //call for qualified name
+                                }
+                            }
                         }
                                            
                     }
@@ -222,73 +282,8 @@ public class SymbolTableGenerator {
         System.out.println("-------------------------------");
         
         
-//        for (NameExpr nameExpr : compilationUnit.findAll(NameExpr.class)) {
-// try{
-//    ResolvedValueDeclaration calledVariable = nameExpr.resolve();
-//   
-//    String variableName = calledVariable.getName();
-//    String variableType = calledVariable.getType().describe();
-//    System.out.println(variableName);        
-//    System.out.println(variableType); 
-//    String type = "Read";
-//
-//    Node parentNode = nameExpr.getParentNode().get();
-//    System.out.println(parentNode); 
-//    System.out.println(parentNode.getClass());
-//    System.out.println(parentNode instanceof AssignExpr); 
-//    if (parentNode instanceof AssignExpr) {
-//                    
-//        Expression target = ((AssignExpr)parentNode).getTarget();     
-//        //Note that arrayAccessExp is not covered in this code
-//        if (target.isNameExpr()) {
-//            if (target.asNameExpr().getNameAsString().equals(variableName)) 
-//                    type = "Write";
-//        }
-//    }
-//    System.out.println(type); 
-//    }
-//    
-//     catch (UnsolvedSymbolException e){
-//            System.out.println("Expression cannot be resolved");
-//        }
-//}
-    
-//        for (TypeDeclaration typeDec : compilationUnit.getTypes()) {
-//        List<BodyDeclaration> members = typeDec.getMembers(); 
-//        if (members != null) {
-//            for (BodyDeclaration member : members) {
-//               
-//                if (member.isMethodDeclaration()) {
-//                    MethodDeclaration field = (MethodDeclaration) member;
-//                    System.out.println("Method name: " + field.getNameAsString());
-//
-//                    
-//                    Stream<String> stream= field.getBody().get().getStatements().stream().map(Node::toString);
-//                    List<String> list = new ArrayList<>();
-//                    list = stream.collect(Collectors.toList());
-//                    for(int i=0;i<list.size();i++){
-//                        
-//                        if(list.get(i).contains("=") || list.get(i).indexOf(" ") == list.get(i).lastIndexOf(" ")){
-//                            
-//                             String statements[] = list.get(i).split("=");
-//                             String left = statements[0];
-//                             String right="";
-//                             if(statements.length>1) right = statements[1];
-//                                  
-//                            
-//                             System.out.println("left "+left);
-//                             System.out.println("right "+right);
-//                        }
-//                        
-//                       
-//                        
-//                    }
-//
-//                    
-//                }
-//            }
-//        }
-//    }
+
+
         
        
         

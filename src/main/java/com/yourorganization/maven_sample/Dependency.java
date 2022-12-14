@@ -15,7 +15,7 @@ public class Dependency {
         SymbolTableGenerator obj = new SymbolTableGenerator();
         obj.symbolsolverparsing();
         obj.attributes();
-      
         
+ 
     }
 }
