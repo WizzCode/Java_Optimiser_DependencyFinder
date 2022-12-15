@@ -39,12 +39,12 @@ public class Dependency {
         int n=attribute_array.size();
         HashMap<String,String> attribute_status = new HashMap<String,String>();
 
-        System.out.println("\nDetermining Dependencies.......\n");
-        System.out.println("Determining Status of Attributes.......\n");
-        System.out.println("Status: Description\n");
-        System.out.println("Isolated: No attributes depend on it and it has no interaction with other attributes\n");
-        System.out.println("Precedence: No attribute depends on it but the attribute itself depends on some attribute\n");
-        System.out.println("Intermediate: Has neither isolated nor precedence status\n");
+//        System.out.println("\nDetermining Dependencies.......\n");
+//        System.out.println("Determining Status of Attributes.......\n");
+//        System.out.println("Status: Description\n");
+//        System.out.println("Isolated: No attributes depend on it and it has no interaction with other attributes\n");
+//        System.out.println("Precedence: No attribute depends on it but the attribute itself depends on some attribute\n");
+//        System.out.println("Intermediate: Has neither isolated nor precedence status\n");
         System.out.println("---------------------------------------------------------------------------------------------\n");
         for(int i=0;i<n;i++){
             String attribute=attribute_array.get(i);
@@ -60,27 +60,27 @@ public class Dependency {
 
 
 
-        System.out.println("-----------------Attributes Classification-----------------\n");
-
-        Formatter fmt = new Formatter();
-        fmt.format("%15s %20s %21s\n", "Attribute\t|", "Dependent on\t|", "Status of Attribute");
-
-        for (int i=0;i<n;i++) {
-            String attribute=attribute_array.get(i);
-
-            List<String> dependencies = new ArrayList<String>();
-            if(dependence_dict.containsKey(attribute)) dependencies= dependence_dict.get(attribute);
-            String dependent_on;
-            if(dependencies.isEmpty()) dependent_on="--";
-            else dependent_on = String.join(",",dependencies );
-
-            String status = attribute_status.get(attribute);
-
-
-            fmt.format("%14s %13s %17s\n", attribute +"\t|", dependent_on +"\t|",status );
-        }
-
-        System.out.println(fmt);
+//        System.out.println("-----------------Attributes Classification-----------------\n");
+//
+//        Formatter fmt = new Formatter();
+//        fmt.format("%15s %20s %21s\n", "Attribute\t|", "Dependent on\t|", "Status of Attribute");
+//
+//        for (int i=0;i<n;i++) {
+//            String attribute=attribute_array.get(i);
+//
+//            List<String> dependencies = new ArrayList<String>();
+//            if(dependence_dict.containsKey(attribute)) dependencies= dependence_dict.get(attribute);
+//            String dependent_on;
+//            if(dependencies.isEmpty()) dependent_on="--";
+//            else dependent_on = String.join(",",dependencies );
+//
+//            String status = attribute_status.get(attribute);
+//
+//
+//            fmt.format("%14s %13s %17s\n", attribute +"\t|", dependent_on +"\t|",status );
+//        }
+//
+//        System.out.println(fmt);
     }
 
     public void attributeDependencyMatrix() throws Exception{
@@ -218,19 +218,13 @@ System.out.println(" ");
         // Obtaining the reference of the worksheet
         Worksheet worksheet = workbook.getWorksheets().get(0);
         Cells cells = worksheet.getCells();
-        int[][] array2D = {
-                { 1, 2 },
-                { 3, 4 },
-                { 5, 6 },
-                { 7, 8 }
-        };
-        cells.importArrayList(attribute_array,0,0, false);
+        String[] title = new String[] { "Dependency Matrix" };
+        cells.importArray(title, 0, 0, true);
+        cells.importArrayList(attribute_array,0,1, false);
         cells.importArrayList(attribute_array,1,0, true);
         cells.importArray(newMatrixInt, 1, 1);
 //        workbook.save("D:\\mahi\\SEM-VII\\LY-Project\\JavaDependencyFinder\\output.xlsx");
         workbook.save("src/main/resources/output.xlsx");
-
-        System.out.println("done");
 
     }
 
