@@ -76,7 +76,7 @@ public class VariableDependency {
         System.out.println("-----------------Variable Classification-----------------\n");
 
         Formatter fmt = new Formatter();
-        fmt.format("%15s %15s %21s\n", "Variable\t|", "Dependent on\t|", "Status of Variable");
+        fmt.format("%25s %25s %31s\n", "Variable\t|", "Dependent on\t|", "Status of Variable");
 
         for (int i=0;i<n;i++) {
             String variable=variable_array.get(i);
@@ -90,7 +90,7 @@ public class VariableDependency {
             String status = variable_status.get(variable);
 
 
-            fmt.format("%14s %13s %17s\n", variable +"\t|", dependent_on +"\t|",status );
+            fmt.format("%24s %23s %27s\n", variable +"\t|", dependent_on +"\t|",status );
         }
 
         System.out.println(fmt);
