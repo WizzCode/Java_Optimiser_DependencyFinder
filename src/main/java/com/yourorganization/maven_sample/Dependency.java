@@ -3,11 +3,18 @@ package com.yourorganization.maven_sample;
 import java.io.FileNotFoundException;
 import java.util.*;
 
+
+import com.aspose.cells.Cells;
+import com.aspose.cells.Workbook;
+import com.aspose.cells.License;
+import com.aspose.cells.Worksheet;
+
+
 public class Dependency {
     public ArrayList<String> attribute_array=new ArrayList<String>();
     public ArrayList<String> right=new ArrayList<String>();
     public HashMap<String,ArrayList<String>> dependence_dict = new HashMap<String,ArrayList<String>>();
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws FileNotFoundException, Exception {
 
         Dependency vdobj = new Dependency();
         vdobj.dependencyinput();
@@ -15,19 +22,19 @@ public class Dependency {
         vdobj.attributeDependencyMatrix();
 
     }
-    
-    public void dependencyinput() throws FileNotFoundException{
-        
+
+    public void dependencyinput() throws FileNotFoundException, Exception{
+
         SymbolTableGenerator obj = new SymbolTableGenerator();
         obj.symbolsolverparsing();
         ProgramAttributes obj2=  obj.attributes();
         attribute_array=obj2.attribute_array;
         right=obj2.right;
         dependence_dict=obj2.dependence_dict;
-        
+
     }
-    
-    public void attributeDependencyAlgo(){
+
+    public void attributeDependencyAlgo() throws Exception{
 
         int n=attribute_array.size();
         HashMap<String,String> attribute_status = new HashMap<String,String>();
@@ -75,8 +82,8 @@ public class Dependency {
 
         System.out.println(fmt);
     }
-    
-    public void attributeDependencyMatrix(){
+
+    public void attributeDependencyMatrix() throws Exception{
         int noVars = attribute_array.size();
         boolean depMatrix[][] = new boolean[noVars][noVars];
         ArrayList<String> graphNodes = new ArrayList<>();
@@ -132,11 +139,11 @@ public class Dependency {
                 }
             }
         }
-        
+
         System.out.println("Generating Depedency Matrix.......\n");
         System.out.println("If the value of the matrix at a position\nwhere the row denotes attribute1 and the column denotes attribute2 is 1 \nthen attribute2 is dependent on attribute1\n");
         System.out.println("----------------------------------Depenedency Matrix---------------------------------------\n");
-   
+
         System.out.printf("%-5s", "");
         for (int i = 0; i < depMatrix[0].length; i++) {
         System.out.printf("%-5s", attribute_array.get(i));
@@ -154,12 +161,14 @@ public class Dependency {
 TransitivityMatrix(depMatrix);
     }
 
-    public void TransitivityMatrix(boolean depMatrix[][])
+    public void TransitivityMatrix(boolean depMatrix[][]) throws Exception
     {
         int dimension = depMatrix.length;
         boolean newMatrix[][] = new boolean [dimension][dimension];
+        int newMatrixInt[][] = new int [dimension][dimension];
         for (int i = 0; i < newMatrix.length; i++){
             Arrays.fill(newMatrix[i], false);
+            Arrays.fill(newMatrixInt[i], 0);
         }
 for(int i=0;i<depMatrix[0].length;i++) // i attribute iterates through columns
 {
@@ -168,12 +177,14 @@ for(int i=0;i<depMatrix[0].length;i++) // i attribute iterates through columns
 if((depMatrix[j][i]==true)) //only performing analysis on dependencyMatrix
 {
     newMatrix[j][i]=true; //we need to show the original dependency as well in the transitive dependency
+    newMatrixInt[j][i]=1;
   boolean lenarr[]  =depMatrix[i];
   for(int k=0;k<lenarr.length;k++)
   {
       if(lenarr[k]==true)
       {
           newMatrix[j][k]=true;
+          newMatrixInt[j][k]=1;
       }
   }
 
@@ -199,6 +210,28 @@ System.out.println(" ");
             }
             System.out.println("\n");
         }
+
+
+//         export to excel
+        Workbook workbook = new Workbook();
+
+        // Obtaining the reference of the worksheet
+        Worksheet worksheet = workbook.getWorksheets().get(0);
+        Cells cells = worksheet.getCells();
+        int[][] array2D = {
+                { 1, 2 },
+                { 3, 4 },
+                { 5, 6 },
+                { 7, 8 }
+        };
+        cells.importArrayList(attribute_array,0,0, false);
+        cells.importArrayList(attribute_array,1,0, true);
+        cells.importArray(newMatrixInt, 1, 1);
+//        workbook.save("D:\\mahi\\SEM-VII\\LY-Project\\JavaDependencyFinder\\output.xlsx");
+        workbook.save("src/main/resources/output.xlsx");
+
+        System.out.println("done");
+
     }
 
 }

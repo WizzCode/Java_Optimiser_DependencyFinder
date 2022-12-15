@@ -5,3 +5,4 @@ output
 .github
 .travis.yml
 dependency-reduced-pom.xml
+**/output.xlsx
