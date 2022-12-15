@@ -21,39 +21,23 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.type.PrimitiveType;
-import com.github.javaparser.ast.type.PrimitiveType.Primitive;
-import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
-import com.github.javaparser.resolution.declarations.ResolvedTypeDeclaration;
-import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
-import com.github.javaparser.resolution.types.ResolvedPrimitiveType;
-import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import java.lang.ProcessBuilder.Redirect.Type;
-
-
-
 
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 
-/**
- * Some code that uses JavaParser.
- */
+
 public class SymbolTableGenerator {
-    //    public static void main(String[] args) {
     public CompilationUnit cu;
     public SourceRoot sourceRoot;
     public JavaParser parser;
@@ -227,7 +211,7 @@ public class SymbolTableGenerator {
                             System.out.println(name);
                              if(!name.equals("") && !paObj.attribute_array.contains(name) ) paObj.attribute_array.add(name);
                              if(!name.equals("") && !paObj.right.contains(name) ) paObj.right.add(name);
-                             if(!dependents.contains(name)) dependents.add(name);
+                             if(!dependents.contains(name) && !name.equals("")) dependents.add(name);
                          }
                     }
                      else{
@@ -238,7 +222,7 @@ public class SymbolTableGenerator {
                      
                     if(!name.equals("") && !paObj.attribute_array.contains(name) ) paObj.attribute_array.add(name);
                     if(!name.equals("") && !paObj.right.contains(name) ) paObj.right.add(name);
-                    if(!dependents.contains(name)) dependents.add(name);
+                    if(!dependents.contains(name) && !name.equals("")) dependents.add(name);
                     String temp = cd.getNameAsString()+"."+ff.getVariable(0).getName();
                     if(!dependents.isEmpty()) paObj.dependence_dict.put(temp,dependents);
                 }
@@ -283,7 +267,7 @@ public class SymbolTableGenerator {
                          if(paObj.dependence_dict.containsKey(qname)){
                              methoddependents = paObj.dependence_dict.get(qname);
                          }
-                            methoddependents.add(name);
+                            if(!name.equals("")&&!methoddependents.contains(name)) methoddependents.add(name);
                             paObj.dependence_dict.put(qname, methoddependents);
                             System.out.println("Method Qualified Name: " + name);
                         }    
@@ -303,7 +287,7 @@ public class SymbolTableGenerator {
                                      if(!name.contains(".") && !name.equals("")) name=cd.getNameAsString()+"."+method.getNameAsString() + "."+name;
                                      System.out.println(name);
                                      if(!name.equals("") && !paObj.right.contains(name) ) paObj.right.add(name);
-                                     if(!dependents.contains(name)) dependents.add(name);
+                                     if(!name.equals("") && !dependents.contains(name)) dependents.add(name);
 
                                  }
 
@@ -314,7 +298,7 @@ public class SymbolTableGenerator {
                      }
                      if(!name .equals("") && !paObj.attribute_array.contains(name ) ) paObj.attribute_array.add(name );
                     if(!name.equals("") && !paObj.right.contains(name) ) paObj.right.add(name);
-                    if(!dependents.contains(name)) dependents.add(name);
+                    if(!dependents.contains(name) && !name.equals("")) dependents.add(name);
                     if(!dependents.isEmpty()) paObj.dependence_dict.put(lhsDecname,dependents);
                 }
 
@@ -333,7 +317,7 @@ public class SymbolTableGenerator {
                             if(paObj.dependence_dict.containsKey(qname)){
                                 methoddependents = paObj.dependence_dict.get(qname);
                             }
-                            methoddependents.add(name);
+                            if(!methoddependents.contains(name)) methoddependents.add(name);
                             paObj.dependence_dict.put(qname, methoddependents);
                             System.out.println("Method Qualified Name: " + name);
                             if(!name.equals("") && !paObj.attribute_array.contains(name) ) paObj.attribute_array.add(name);
@@ -352,7 +336,7 @@ public class SymbolTableGenerator {
                             System.out.println("LHS: "+left);
                             String leftstr = ssObj.getQualifiedName(left);
                             if(!leftstr.contains(".")&& !leftstr.equals("")) leftstr=cd.getNameAsString()+"."+method.getNameAsString() + "."+leftstr;
-                            System.out.println("Left Qualified Name: " + name);
+                            System.out.println("Left Qualified Name: " + leftstr);
 
                             System.out.println("RHS: "+right); 
                             if(right instanceof BinaryExpr){ 
@@ -360,9 +344,10 @@ public class SymbolTableGenerator {
                                 ArrayList<Node> subExprList = new ArrayList<>(right.getChildNodes());
                                 for(int i =0;i<subExprList.size();i++){
                                     name = ssObj.getQualifiedName(subExprList.get(i));
-                                    if(!name.equals("") && !paObj.right.contains(name) ) paObj.right.add(name);
-                                    if(!dependents.contains(name)) dependents.add(name);
                                     if(!name.contains(".") && !name.equals("")) name=cd.getNameAsString()+"."+method.getNameAsString() + "."+name;
+                                    if(!name.equals("") && !paObj.right.contains(name) ) paObj.right.add(name);
+                                    if(!name.equals("") && !dependents.contains(name)) dependents.add(name);
+                                    
                                     System.out.println(name);
                                 }
                             }

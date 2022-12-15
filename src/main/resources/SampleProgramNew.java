@@ -6,10 +6,9 @@ public class SampleProgramNew{
         obj.f1();
         obj.f2();
         int val1= 4;
-        int val2 = obj.f3(val1);
+        int val2 = obj.f3();
         int val3;
-        val3 = 2+obj.f3(val1);
-        obj.f4();
+        val3 = 2+obj.f3();
     }
 }
 
@@ -30,14 +29,11 @@ public void f2(){
     String abc = "f2 function variable";
 }
 
-public int f3(int val1){
-     int val2;
-     val2=val1 +2;
+public int f3(){
+     int val2=2;
      val2=val2+2;
      return val2;
 }
-public void f4(){
-     val2=val2+2;
-}
+
 
 }
