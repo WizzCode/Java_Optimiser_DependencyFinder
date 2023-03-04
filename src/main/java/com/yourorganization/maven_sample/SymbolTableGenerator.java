@@ -48,7 +48,7 @@ public class SymbolTableGenerator {
     public void symbolsolverparsing() throws FileNotFoundException{
         
          
-        System.out.println("Entered function");
+        System.out.println("Creating Compilation Unit");
         combinedTypeSolver = new CombinedTypeSolver();
         ParserConfiguration parserConfiguration = new ParserConfiguration();
         ParseResult<CompilationUnit> parseResultcompilationUnit;
@@ -58,7 +58,8 @@ public class SymbolTableGenerator {
         symbolSolver = new JavaSymbolSolver(this.combinedTypeSolver);
         parserConfiguration.setSymbolResolver(this.symbolSolver);
         parser = new JavaParser(parserConfiguration);
-        FileInputStream in = new FileInputStream("src/main/resources/SampleProgramNew.java");
+//        FileInputStream in = new FileInputStream("src/main/resources/SampleProgramNew.java");
+        FileInputStream in = new FileInputStream("src/main/resources/OptimiserInput.java");
         parseResultcompilationUnit = this.parser.parse(in);
         compilationUnit = parseResultcompilationUnit.getResult().get();
         

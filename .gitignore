@@ -6,3 +6,4 @@ output
 .travis.yml
 dependency-reduced-pom.xml
 **/output.xlsx
+nbactions.xml

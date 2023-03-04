@@ -14,15 +14,23 @@ public class Dependency {
     public ArrayList<String> attribute_array=new ArrayList<String>();
     public ArrayList<String> right=new ArrayList<String>();
     public HashMap<String,ArrayList<String>> dependence_dict = new HashMap<String,ArrayList<String>>();
-    public static void main(String[] args) throws FileNotFoundException, Exception {
-
-        Dependency vdobj = new Dependency();
-        vdobj.dependencyinput();
-        vdobj.attributeDependencyAlgo();
-        vdobj.attributeDependencyMatrix();
-
+//    public static void main(String[] args) throws FileNotFoundException, Exception {
+//
+//        Dependency vdobj = new Dependency();
+//        vdobj.calldependency();
+//        vdobj.dependencyinput();
+//        vdobj.attributeDependencyAlgo();
+//        vdobj.attributeDependencyMatrix();
+//
+//    }
+    
+    public void calldependency() throws FileNotFoundException, Exception{
+        System.out.println("Calling Dependency Finder");
+        dependencyinput();
+        attributeDependencyAlgo();
+        attributeDependencyMatrix();
     }
-
+    
     public void dependencyinput() throws FileNotFoundException, Exception{
 
         SymbolTableGenerator obj = new SymbolTableGenerator();
