@@ -15,6 +15,8 @@ public static void main(String[] args) {
    {
        System.out.println("yes yes yes ");
    }
+   
+   if(2<30) {}
 }
 
 public static void yesMethod()
@@ -24,6 +26,10 @@ public static void yesMethod()
     {
 System.out.println("yep");
 if(a==30)
+{
+
+}
+if(7==30)
 {
 
 }

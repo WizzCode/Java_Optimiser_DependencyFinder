@@ -18,13 +18,14 @@ import static com.github.javaparser.StaticJavaParser.parse;
 public class IfStmtVisitor extends VoidVisitorAdapter<List<String>>{
     @Override
  public void visit(IfStmt ifStmt, List<String> collector) {
-
-         super.visit(ifStmt, collector);
+         
+//         super.visit(ifStmt, collector);
 
         //Statement then = ifStmt.getThenStmt();
 blockStmtVisit b_obj = new blockStmtVisit();
 b_obj.visit(ifStmt,null);
          collector.add(ifStmt.getThenStmt().toString());
+        
         // System.out.println("If Statement body: "+ifStmt.getThenStmt());
          }
 
