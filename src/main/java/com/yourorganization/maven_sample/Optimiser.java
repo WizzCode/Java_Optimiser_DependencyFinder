@@ -117,54 +117,66 @@ public class Optimiser  {
 
    }
 
-   public void avoidBooleanIfComparison()
-   {
-       flag = 3;
-       System.out.println("This method is used for detecting unnecessary boolean comparison");
-       // check the datatype of the variable in the Expression (condition inside if) and then check
-       // if its being compared to true or false
-       IfStmtVisitor v_obj = new IfStmtVisitor();
-       List <Expression> collector = new ArrayList<>();
-v_obj.visit(obj.compilationUnit,collector);
+    public void avoidBooleanIfComparison() {
+        flag = 3;
+        System.out.println("This method is used for detecting unnecessary boolean comparison");
+        // check the datatype of the variable in the Expression (condition inside if) and then check
+        // if its being compared to true or false
+        IfStmtVisitor v_obj = new IfStmtVisitor();
+        List<Expression> collector = new ArrayList<>();
+        v_obj.visit(obj.compilationUnit, collector);
 //variableType v1 = new variableType();
-for(int i=0;i<collector.size();i++)
-{
-   
-   // System.out.println(collector.get(i).calculateResolvedType());
-    try
-    {
-        Expression leftVariable = collector.get(i).asBinaryExpr().getLeft();
+        for (int i = 0; i < collector.size(); i++) {
+            System.out.println(collector.get(i));
+
+            // here u can get stuff on both sides of the and or OR
+            List<BinaryExpr> myList = new ArrayList<BinaryExpr>();
+            BinaryExprExtract b_obj = new BinaryExprExtract();
+            b_obj.visit((BinaryExpr) collector.get(i), myList);
+            for (int k = 0; k < myList.size(); k++) {
+                helperForOptimizationMethod(myList.get(k));
+                // System.out.println("printing from mlist= " + myList.get(k));
+            }
+
+
+        }
+    }
+    public void helperForOptimizationMethod(BinaryExpr n) {
+        Expression leftVariable = n.getLeft();
         // System.out.println(leftVariable.calculateResolvedType().describe());
         String leftvarType = leftVariable.calculateResolvedType().describe().toString();
 
-        String operator = collector.get(i).asBinaryExpr().getOperator().toString();
-        Expression rightVariable = collector.get(i).asBinaryExpr().getRight();
-        //System.out.println(rightVariable.calculateResolvedType().describe());
+        String operator = n.getOperator().toString();
+        Expression rightVariable = n.getRight();
+        // System.out.println(rightVariable.calculateResolvedType().describe());
         String rightvarType = rightVariable.calculateResolvedType().describe().toString();
-//        ArrayList<Node> subExprList = new ArrayList<>(collector.get(i).getChildNodes());
+
 // now u have to check if operator = "==" and left variable is boolean and right variable is 0
-        if(operator== "EQUALS")
+        try
         {
+            if (operator == "EQUALS") {
 // JUST NEED TO FIND THE CLASS OF THE LEFT VARIABLE
-            if((leftvarType=="boolean")&&(rightvarType=="boolean"))// OR DIFFERENT REGEX THAT PEOPLE USE TO CHECK STRING SIZE=0
-            {
-                 System.out.println(collector.get(i));
-                System.out.println(collector.get(i).getBegin());
-                System.out.println("Avoid using equality with boolean expressions");
-                //condition satisfied
+                if ((leftvarType == "boolean") && (rightvarType == "boolean"))// OR DIFFERENT REGEX THAT PEOPLE USE TO CHECK STRING SIZE=0
+                {
+                    //  System.out.println(collector.get(i));
+                    //System.out.println(collector.get(i).getBegin());
+                    System.out.println("Avoid using equality with boolean expressions "+n);
+                    //condition satisfied
+                }
+
             }
-            
+
         }
+
+        catch (IllegalStateException e)
+        {
+
+        }
+
+
+        //Other methods of optimisation
+        //pass condition of ifStatement to expression statement
     }
-    catch (IllegalStateException e)
-    {
-
-    }
-
-    //System.out.println("condition "+i+" = "+collector.get(i).calculateResolvedType());
-}
-   }
-
 
    //Other methods of optimisation
     //pass condition of ifStatement to expression statement

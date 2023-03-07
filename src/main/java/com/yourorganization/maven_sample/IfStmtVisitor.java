@@ -27,7 +27,7 @@ public class IfStmtVisitor extends VoidVisitorAdapter<List<Expression>>{
 
         Optimiser obj = new Optimiser();
         flag = obj.flag;
-       
+       //System.out.println("reached here");
         if(flag==2){
              Statement then = ifStmt.getThenStmt();
             
@@ -49,6 +49,7 @@ public class IfStmtVisitor extends VoidVisitorAdapter<List<Expression>>{
         }
         
         collector.add(ifStmt.getCondition());
+        //System.out.println(collector.size());
         super.visit(ifStmt, collector);
 //blockStmtVisit b_obj = new blockStmtVisit();
 //b_obj.visit(ifStmt,null);
