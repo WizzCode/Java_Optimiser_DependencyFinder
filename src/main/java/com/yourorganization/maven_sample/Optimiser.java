@@ -72,26 +72,35 @@ v_obj.visit(obj.compilationUnit,collector);
 //variableType v1 = new variableType();
 for(int i=0;i<collector.size();i++)
 {
+    System.out.println(collector.get(i));
    // System.out.println(collector.get(i).calculateResolvedType());
-  Expression leftVariable = collector.get(i).asBinaryExpr().getLeft();
- // System.out.println(leftVariable.calculateResolvedType().describe());
-String leftvarType = leftVariable.calculateResolvedType().describe().toString();
-
-  String operator = collector.get(i).asBinaryExpr().getOperator().toString();
-  Expression rightVariable = collector.get(i).asBinaryExpr().getRight();
-  //System.out.println(rightVariable.calculateResolvedType().describe());
-  String rightvarType = rightVariable.calculateResolvedType().describe().toString();
-  System.out.println(operator);
-// now u have to check if operator = "==" and left variable is boolean and right variable is 0
-    if(operator== "EQUALS")
+    try
     {
+        Expression leftVariable = collector.get(i).asBinaryExpr().getLeft();
+        // System.out.println(leftVariable.calculateResolvedType().describe());
+        String leftvarType = leftVariable.calculateResolvedType().describe().toString();
+
+        String operator = collector.get(i).asBinaryExpr().getOperator().toString();
+        Expression rightVariable = collector.get(i).asBinaryExpr().getRight();
+        //System.out.println(rightVariable.calculateResolvedType().describe());
+        String rightvarType = rightVariable.calculateResolvedType().describe().toString();
+        System.out.println(operator);
+// now u have to check if operator = "==" and left variable is boolean and right variable is 0
+        if(operator== "EQUALS")
+        {
 // JUST NEED TO FIND THE CLASS OF THE LEFT VARIABLE
-       if((leftvarType=="boolean")&&(rightvarType=="boolean"))// OR DIFFERENT REGEX THAT PEOPLE USE TO CHECK STRING SIZE=0
-       {
-           System.out.println("Avoid using equality with boolean expressions");
-           //condition satisfied
-       }
+            if((leftvarType=="boolean")&&(rightvarType=="boolean"))// OR DIFFERENT REGEX THAT PEOPLE USE TO CHECK STRING SIZE=0
+            {
+                System.out.println("Avoid using equality with boolean expressions");
+                //condition satisfied
+            }
+        }
     }
+    catch (IllegalStateException e)
+    {
+
+    }
+
     //System.out.println("condition "+i+" = "+collector.get(i).calculateResolvedType());
 }
    }

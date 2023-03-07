@@ -4,26 +4,15 @@ public static void main(String[] args) {
     boolean a = false;
     int b = 24;
     boolean a = 35;
-    if(a==true)
+    if(yesMethod()==true)
     {
 
     }
-    if(a==35)
-    {
 
-    }
-    if(b==24)
-    {
-
-    }
-    if(a==true)
-    {
-
-    }
 }
 
-public static void yesMethod()
+public static boolean yesMethod()
 {
-
+return true;
 }
 }  
