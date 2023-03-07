@@ -54,8 +54,10 @@ public class Optimiser  {
       flag =1;
       System.out.println("This method is used for detecting unnecessary method calls inside loops");
       VoidVisitor<List<Expression>> forStmtVisitor = new ForStmtVisitor();
+      VoidVisitor<List<Expression>> whileStmtVisitor = new WhileStmtVisitor();
       List <Expression> collector = new ArrayList<>();
       forStmtVisitor.visit(obj.compilationUnit,collector);
+      whileStmtVisitor.visit(obj.compilationUnit,collector);
       for(int i=0;i<collector.size();i++){
           
           try

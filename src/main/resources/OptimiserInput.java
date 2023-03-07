@@ -14,7 +14,20 @@ public static void main(String[] args) {
     
     String str = "Hello";
    
-		for (int i = 0; i < str.length(); i++)		/* VIOLATION*/
+		while(2 < str.length())	/* VIOLATION*/
+	  	{
+	  	    System.out.println(2);
+                    int i=1;
+	  	    while(i<2){
+                        i++;
+                    }
+                    
+                    while(2<str.length()){
+                    }
+			
+		}
+                
+                for (int i = 0; i < str.length(); i++)		/* VIOLATION*/
 	  	{
 	  	    System.out.println(i);
 	  	    
@@ -27,10 +40,14 @@ public static void main(String[] args) {
 	  	    System.out.println(i);
 	  	    for(int j = 0; j<i; i++){
                         System.out.println(i);
+                        while(i < str.length()){
+                        System.out.println(i);
+                    }
                     }
                     if(2>3)
                     {
                     }
+                    
 			
 		}
        
