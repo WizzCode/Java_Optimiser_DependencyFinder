@@ -9,12 +9,12 @@ public static void main(String[] args) {
              if(4<8){}
          }
          
-         if(a==true){}
+        if(a==true){}
     }
     
     String str = "Hello";
    
-		while(2 < str.length())	/* VIOLATION*/
+		while(2 < str.length()+1+str.charAt(0))	/* VIOLATION*/
 	  	{
 	  	    System.out.println(2);
                     int i=1;

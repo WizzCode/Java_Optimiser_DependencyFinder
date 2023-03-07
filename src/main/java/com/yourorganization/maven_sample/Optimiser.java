@@ -62,19 +62,38 @@ public class Optimiser  {
           
           try
     {
-        
-            Expression leftvarType = collector.get(i).asBinaryExpr().getLeft();
-            Expression rightvarType = collector.get(i).asBinaryExpr().getRight();
-           
-        
-            if((leftvarType instanceof MethodCallExpr)||(rightvarType instanceof MethodCallExpr))
+            Expression leftvar = collector.get(i).asBinaryExpr().getLeft();
+            Expression rightvar = collector.get(i).asBinaryExpr().getRight();
+            if((leftvar instanceof MethodCallExpr)||(rightvar instanceof MethodCallExpr))
             {
                 System.out.println(collector.get(i).getBegin());
                 System.out.println(collector.get(i));
                 System.out.println("Avoid method calls in loop");
               
             }
+            else if(leftvar instanceof BinaryExpr){
+            ArrayList<Node> subExprListLeft = new ArrayList<>(leftvar.getChildNodes());
             
+            for(int j =0;j<subExprListLeft.size();j++){
+               
+                if(subExprListLeft.get(j) instanceof MethodCallExpr){
+                System.out.println(collector.get(i).getBegin());
+                System.out.println(collector.get(i));
+                System.out.println("Avoid method calls in loop");
+                }
+            }
+    }
+            else if(rightvar instanceof BinaryExpr){
+            ArrayList<Node> subExprListRight = new ArrayList<>(rightvar.getChildNodes());
+            for(int j =0;j<subExprListRight.size();j++){
+               
+                if(subExprListRight.get(j) instanceof MethodCallExpr){
+                System.out.println(collector.get(i).getBegin());
+                System.out.println(collector.get(i));
+                System.out.println("Avoid method calls in loop");
+                }
+            }
+            } 
         
     }
     catch (IllegalStateException e)
@@ -122,7 +141,7 @@ for(int i=0;i<collector.size();i++)
         Expression rightVariable = collector.get(i).asBinaryExpr().getRight();
         //System.out.println(rightVariable.calculateResolvedType().describe());
         String rightvarType = rightVariable.calculateResolvedType().describe().toString();
-       
+//        ArrayList<Node> subExprList = new ArrayList<>(collector.get(i).getChildNodes());
 // now u have to check if operator = "==" and left variable is boolean and right variable is 0
         if(operator== "EQUALS")
         {
