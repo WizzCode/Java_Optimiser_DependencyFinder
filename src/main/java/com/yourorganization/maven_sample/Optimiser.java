@@ -33,6 +33,8 @@ import static com.github.javaparser.StaticJavaParser.parse;
 //This class contains different methods for optimisation.
 
 public class Optimiser  {
+    static int flag;
+    
     SymbolTableGenerator obj = new SymbolTableGenerator();
     
     //This method is called in the Main class which has the main method and is the entry point of the project
@@ -44,26 +46,60 @@ public class Optimiser  {
         //Different methods are called here 
         avoidMethodCalls();
         AvoidEmptyIfStatement();
+        
         avoidBooleanIfComparison();
     }
     
    public void avoidMethodCalls(){
-      System.out.println("This method is used for removing unnecessary method calls inside loops");
+      flag =1;
+      System.out.println("This method is used for detecting unnecessary method calls inside loops");
+      VoidVisitor<List<Expression>> forStmtVisitor = new ForStmtVisitor();
+      List <Expression> collector = new ArrayList<>();
+      forStmtVisitor.visit(obj.compilationUnit,collector);
+      for(int i=0;i<collector.size();i++){
+          
+          try
+    {
+        
+            Expression leftvarType = collector.get(i).asBinaryExpr().getLeft();
+            Expression rightvarType = collector.get(i).asBinaryExpr().getRight();
+           
+        
+            if((leftvarType instanceof MethodCallExpr)||(rightvarType instanceof MethodCallExpr))
+            {
+                System.out.println(collector.get(i).getBegin());
+                System.out.println(collector.get(i));
+                System.out.println("Avoid method calls in loop");
+              
+            }
+            
+        
+    }
+    catch (IllegalStateException e)
+    {
+
+    }
+      }
+      
+      System.out.println("--------------");
+
    }
 
    public void AvoidEmptyIfStatement() throws IOException {
        
       System.out.println("This method is used for detecting empty if blocks");
-
+      flag = 2;
       VoidVisitor<List<Expression>> ifStmtVisitor = new IfStmtVisitor();
       List <Expression> collector = new ArrayList<>();
       ifStmtVisitor.visit(obj.compilationUnit,collector);
-      System.out.print(obj.compilationUnit);
+//      System.out.print(obj.compilationUnit);
 
    }
 
    public void avoidBooleanIfComparison()
    {
+       flag = 3;
+       System.out.println("This method is used for detecting unnecessary boolean comparison");
        // check the datatype of the variable in the Expression (condition inside if) and then check
        // if its being compared to true or false
        IfStmtVisitor v_obj = new IfStmtVisitor();
@@ -72,7 +108,7 @@ v_obj.visit(obj.compilationUnit,collector);
 //variableType v1 = new variableType();
 for(int i=0;i<collector.size();i++)
 {
-    System.out.println(collector.get(i));
+   
    // System.out.println(collector.get(i).calculateResolvedType());
     try
     {
@@ -84,16 +120,19 @@ for(int i=0;i<collector.size();i++)
         Expression rightVariable = collector.get(i).asBinaryExpr().getRight();
         //System.out.println(rightVariable.calculateResolvedType().describe());
         String rightvarType = rightVariable.calculateResolvedType().describe().toString();
-        System.out.println(operator);
+       
 // now u have to check if operator = "==" and left variable is boolean and right variable is 0
         if(operator== "EQUALS")
         {
 // JUST NEED TO FIND THE CLASS OF THE LEFT VARIABLE
             if((leftvarType=="boolean")&&(rightvarType=="boolean"))// OR DIFFERENT REGEX THAT PEOPLE USE TO CHECK STRING SIZE=0
             {
+                 System.out.println(collector.get(i));
+                System.out.println(collector.get(i).getBegin());
                 System.out.println("Avoid using equality with boolean expressions");
                 //condition satisfied
             }
+            
         }
     }
     catch (IllegalStateException e)

@@ -18,20 +18,44 @@ import java.util.List;
 import static com.github.javaparser.StaticJavaParser.parse;
 
 public class IfStmtVisitor extends VoidVisitorAdapter<List<Expression>>{
+    int flag;
+    
+    
     @Override
  public void visit(IfStmt ifStmt, List<Expression> collector) {
          
-//         super.visit(ifStmt, collector);
 
-        //Statement then = ifStmt.getThenStmt();
-        //
+        Optimiser obj = new Optimiser();
+        flag = obj.flag;
+       
+        if(flag==2){
+             Statement then = ifStmt.getThenStmt();
+            
+             if (then instanceof BlockStmt) {
+            BlockStmt blockThenStmt = then.asBlockStmt();
+             
+          if(blockThenStmt.getStatements().size()==0)
+          {
+              System.out.println(ifStmt);
+              
+              System.out.println(ifStmt.getBegin());
+            
+              System.out.println("empty if encountered! Avoid empty if \n");
+          }
+          
+          
+         
+        }
+        }
+        
         collector.add(ifStmt.getCondition());
-blockStmtVisit b_obj = new blockStmtVisit();
-b_obj.visit(ifStmt,null);
+        super.visit(ifStmt, collector);
+//blockStmtVisit b_obj = new blockStmtVisit();
+//b_obj.visit(ifStmt,null);
 
 
         
-        // System.out.println("If Statement body: "+ifStmt.getThenStmt());
+        
          }
 
 }
