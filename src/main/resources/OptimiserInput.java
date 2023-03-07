@@ -1,39 +1,29 @@
 public class OptimiserInput {  
 public static void main(String[] args) {  
     //Code of Java for loop  
-   int a =10;
-   if(a==10)
-   {
-       System.out.println("hurray");
-   }
+    boolean a = false;
+    int b = 24;
+    boolean a = 35;
+    if(a==true)
+    {
 
-   while(a<20)
-   {
-       a++;
-   }
-   if(a<30)
-   {
-       System.out.println("yes yes yes ");
-   }
-   
-   if(2<30) {}
+    }
+    if(a==35)
+    {
+
+    }
+    if(b==24)
+    {
+
+    }
+    if(a==true)
+    {
+
+    }
 }
 
 public static void yesMethod()
 {
-    int a = 24;
-    if(a==24)
-    {
-System.out.println("yep");
-if(a==30)
-{
 
-}
-if(7==30)
-{
-
-}
-
-    }
 }
 }  
