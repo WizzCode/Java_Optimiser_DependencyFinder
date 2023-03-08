@@ -132,7 +132,21 @@ public class Optimiser  {
             // here u can get stuff on both sides of the and or OR
             List<BinaryExpr> myList = new ArrayList<BinaryExpr>();
             BinaryExprExtract b_obj = new BinaryExprExtract();
-            b_obj.visit((BinaryExpr) collector.get(i), myList);
+            try
+            {
+                b_obj.visit((BinaryExpr) collector.get(i), myList);
+            }
+            catch (ClassCastException e)
+            {
+Node e1 = collector.get(i).getChildNodes().get(0);
+                while ( e1.getChildNodes().get(0) instanceof EnclosedExpr)
+                {
+                    //System.out.println(e1);
+                 e1 = e1.getChildNodes().get(0);
+                }
+                    b_obj.visit((BinaryExpr) e1.getChildNodes().get(0),myList);
+            }
+
             for (int k = 0; k < myList.size(); k++) {
                 helperForOptimizationMethod(myList.get(k));
                 // System.out.println("printing from mlist= " + myList.get(k));
