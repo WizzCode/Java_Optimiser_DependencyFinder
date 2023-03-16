@@ -48,6 +48,7 @@ public class Optimiser  {
         AvoidEmptyIfStatement();
         
         avoidBooleanIfComparison();
+        catchPrimitivesInConstructor();
     }
     
    public void avoidMethodCalls(){
@@ -192,6 +193,27 @@ Node e1 = collector.get(i).getChildNodes().get(0);
         //pass condition of ifStatement to expression statement
     }
 
+    public void catchPrimitivesInConstructor() throws NoSuchMethodException
+    {
+
+        System.out.println("This method is used to catch un-necessary declarations of primitives in respective constructors");
+        List<ObjectCreationExpr> objectcreationList = new ArrayList<ObjectCreationExpr>();
+        getCalledMethods g_obj = new getCalledMethods();
+        g_obj.visit(obj.compilationUnit,objectcreationList);
+        for(int i=0;i<objectcreationList.size();i++)
+        {
+            Node e =  objectcreationList.get(i).getChildNodes().get(1);
+
+            String typeMethod = objectcreationList.get(i).getChildNodes().get(0).toString();// type of the method
+
+           String typeObject = e.getClass().getSimpleName();// type of the object passed to method
+        System.out.println("typeMethod= "+typeMethod+" typeObject= "+typeObject);
+        if(((typeMethod.equals("Integer"))&&(typeObject.equals("IntegerLiteralExpr")))||((typeMethod.equals("Character"))&&(typeObject.equals("CharLiteralExpr"))))
+            {
+                System.out.println("Avoid passing primitives to constructors , line = "+objectcreationList.get(i).getBegin().get().line);
+            }
+        }
+    }
    //Other methods of optimisation
     //pass condition of ifStatement to expression statement
 }
