@@ -36,11 +36,11 @@ public class IfStmtVisitor extends VoidVisitorAdapter<List<Expression>>{
              
           if(blockThenStmt.getStatements().size()==0)
           {
-              System.out.println(ifStmt);
-              
+              System.out.println("\nEmpty if encountered! Avoid empty if");
               System.out.println(ifStmt.getBegin());
-            
-              System.out.println("empty if encountered! Avoid empty if \n");
+              System.out.println(ifStmt);
+                  
+              
           }
           
           

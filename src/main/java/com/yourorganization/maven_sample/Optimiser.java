@@ -63,13 +63,16 @@ public class Optimiser  {
           
           try
     {
+            
             Expression leftvar = collector.get(i).asBinaryExpr().getLeft();
             Expression rightvar = collector.get(i).asBinaryExpr().getRight();
+           
             if((leftvar instanceof MethodCallExpr)||(rightvar instanceof MethodCallExpr))
             {
+                
+                System.out.println("\nMethod call detected! Avoid method calls in loop");
                 System.out.println(collector.get(i).getBegin());
                 System.out.println(collector.get(i));
-                System.out.println("Avoid method calls in loop");
               
             }
             else if(leftvar instanceof BinaryExpr){
@@ -78,9 +81,10 @@ public class Optimiser  {
             for(int j =0;j<subExprListLeft.size();j++){
                
                 if(subExprListLeft.get(j) instanceof MethodCallExpr){
+                
+                System.out.println("\nMethod call detected! Avoid method calls in loop");
                 System.out.println(collector.get(i).getBegin());
                 System.out.println(collector.get(i));
-                System.out.println("Avoid method calls in loop");
                 }
             }
     }
@@ -89,9 +93,9 @@ public class Optimiser  {
             for(int j =0;j<subExprListRight.size();j++){
                
                 if(subExprListRight.get(j) instanceof MethodCallExpr){
+                System.out.println("\nMethod call detected! Avoid method calls in loop");
                 System.out.println(collector.get(i).getBegin());
                 System.out.println(collector.get(i));
-                System.out.println("Avoid method calls in loop");
                 }
             }
             } 
@@ -120,6 +124,7 @@ public class Optimiser  {
 
     public void avoidBooleanIfComparison() {
         flag = 3;
+        System.out.println("------------");
         System.out.println("This method is used for detecting unnecessary boolean comparison");
         // check the datatype of the variable in the Expression (condition inside if) and then check
         // if its being compared to true or false
@@ -128,7 +133,7 @@ public class Optimiser  {
         v_obj.visit(obj.compilationUnit, collector);
 //variableType v1 = new variableType();
         for (int i = 0; i < collector.size(); i++) {
-            System.out.println(collector.get(i));
+//            System.out.println(collector.get(i));
 
             // here u can get stuff on both sides of the and or OR
             List<BinaryExpr> myList = new ArrayList<BinaryExpr>();
@@ -173,9 +178,10 @@ Node e1 = collector.get(i).getChildNodes().get(0);
 // JUST NEED TO FIND THE CLASS OF THE LEFT VARIABLE
                 if ((leftvarType == "boolean") && (rightvarType == "boolean"))// OR DIFFERENT REGEX THAT PEOPLE USE TO CHECK STRING SIZE=0
                 {
-                    //  System.out.println(collector.get(i));
-                    //System.out.println(collector.get(i).getBegin());
-                    System.out.println("Avoid using equality with boolean expressions "+n);
+                   
+                    System.out.println("\nAvoid using equality with boolean expressions ");
+                    System.out.println(n.getBegin());
+                    System.out.println(n);
                     //condition satisfied
                 }
 
@@ -195,8 +201,8 @@ Node e1 = collector.get(i).getChildNodes().get(0);
 
     public void catchPrimitivesInConstructor() throws NoSuchMethodException
     {
-
-        System.out.println("This method is used to catch un-necessary declarations of primitives in respective constructors");
+        System.out.println("------------");
+        System.out.println("\nThis method is used to catch un-necessary declarations of primitives in respective constructors");
         List<ObjectCreationExpr> objectcreationList = new ArrayList<ObjectCreationExpr>();
         getCalledMethods g_obj = new getCalledMethods();
         g_obj.visit(obj.compilationUnit,objectcreationList);
@@ -207,10 +213,12 @@ Node e1 = collector.get(i).getChildNodes().get(0);
             String typeMethod = objectcreationList.get(i).getChildNodes().get(0).toString();// type of the method
 
            String typeObject = e.getClass().getSimpleName();// type of the object passed to method
-        System.out.println("typeMethod= "+typeMethod+" typeObject= "+typeObject);
+        
         if(((typeMethod.equals("Integer"))&&(typeObject.equals("IntegerLiteralExpr")))||((typeMethod.equals("Character"))&&(typeObject.equals("CharLiteralExpr"))))
             {
-                System.out.println("Avoid passing primitives to constructors , line = "+objectcreationList.get(i).getBegin().get().line);
+                System.out.println("\nAvoid passing primitives to constructors");
+                System.out.println(objectcreationList.get(i).getBegin());
+                System.out.println(objectcreationList.get(i));
             }
         }
     }
