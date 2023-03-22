@@ -23,8 +23,8 @@ public static void main(String[] args) {
     
     String str = "Hello";
 
-		
-		while(str.charAt(0)=='y')	/* VIOLATION*/
+		while(str.isEmpty()){}
+		while(str.charAt(0)+str.charAt(1)=='y')	/* VIOLATION*/
 	  	{
 	  	    System.out.println(2);
                     i=1;

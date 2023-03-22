@@ -63,7 +63,11 @@ public class Optimiser  {
           
           try
     {
-            
+            if(collector.get(i) instanceof MethodCallExpr){
+             System.out.println("\nMethod call detected! Avoid method calls in loop");
+             System.out.println(collector.get(i).getBegin());
+             System.out.println(collector.get(i));
+    }
             Expression leftvar = collector.get(i).asBinaryExpr().getLeft();
             Expression rightvar = collector.get(i).asBinaryExpr().getRight();
            
@@ -73,6 +77,7 @@ public class Optimiser  {
                 System.out.println("\nMethod call detected! Avoid method calls in loop");
                 System.out.println(collector.get(i).getBegin());
                 System.out.println(collector.get(i));
+                
               
             }
             else if(leftvar instanceof BinaryExpr){
@@ -85,6 +90,7 @@ public class Optimiser  {
                 System.out.println("\nMethod call detected! Avoid method calls in loop");
                 System.out.println(collector.get(i).getBegin());
                 System.out.println(collector.get(i));
+                
                 }
             }
     }
@@ -96,6 +102,7 @@ public class Optimiser  {
                 System.out.println("\nMethod call detected! Avoid method calls in loop");
                 System.out.println(collector.get(i).getBegin());
                 System.out.println(collector.get(i));
+                
                 }
             }
             } 
