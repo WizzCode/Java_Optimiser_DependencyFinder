@@ -46,13 +46,18 @@ public class Optimiser  {
 //        System.out.println(obj.compilationUnit); //Access compilation unit used for parsing
         
         //Different methods are called here 
-//        avoidMethodCalls();
-//        AvoidEmptyIfStatement();
-//        
-//        avoidBooleanIfComparison();
-//        catchPrimitivesInConstructor();
-          loopInvariantCodeMotion();
-          avoidSynchronizedInLoop();
+        avoidMethodCalls();
+        System.out.println("--------------");
+        AvoidEmptyIfStatement();   
+        System.out.println("--------------");
+        avoidBooleanIfComparison();
+        System.out.println("--------------");
+        catchPrimitivesInConstructor();
+        System.out.println("--------------");
+        loopInvariantCodeMotion();
+        System.out.println("--------------");
+        avoidSynchronizedInLoop();
+        System.out.println("--------------");
     }
     
     public void loopInvariantCodeMotion(){
@@ -128,8 +133,6 @@ public class Optimiser  {
     }
       }
       
-      System.out.println("--------------");
-
    }
 
    public void AvoidEmptyIfStatement() throws IOException {
@@ -145,7 +148,6 @@ public class Optimiser  {
 
     public void avoidBooleanIfComparison() {
         flag = 3;
-        System.out.println("------------");
         System.out.println("This method is used for detecting unnecessary boolean comparison");
         // check the datatype of the variable in the Expression (condition inside if) and then check
         // if its being compared to true or false
