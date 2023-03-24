@@ -5,7 +5,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.ForStmt;
+import com.github.javaparser.ast.stmt.WhileStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
@@ -17,12 +17,12 @@ import java.util.List;
 
 import static com.github.javaparser.StaticJavaParser.parse;
 
-public class ForStmtVisitor extends VoidVisitorAdapter<List<Expression>>{
+public class WhileBodyVisitor extends VoidVisitorAdapter<List<Statement>>{
     @Override
- public void visit(ForStmt forStmt, List<Expression> collector) {
-      
-        collector.add(forStmt.getCompare().get());
-        super.visit(forStmt, collector);
+ public void visit(WhileStmt whileStmt, List<Statement> collector) {
+         
+       collector.add(whileStmt.getBody());
+        super.visit(whileStmt, collector);
         }
  
 

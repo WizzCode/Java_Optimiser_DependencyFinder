@@ -17,14 +17,12 @@ import java.util.List;
 
 import static com.github.javaparser.StaticJavaParser.parse;
 
-public class ForStmtVisitor extends VoidVisitorAdapter<List<Expression>>{
+public class ForBodyVisitor extends VoidVisitorAdapter<List<Statement>>{
     @Override
- public void visit(ForStmt forStmt, List<Expression> collector) {
+ public void visit(ForStmt forStmt, List<Statement> collector) {
       
-        collector.add(forStmt.getCompare().get());
+        collector.add(forStmt.getBody());
         super.visit(forStmt, collector);
         }
- 
-
 
 }

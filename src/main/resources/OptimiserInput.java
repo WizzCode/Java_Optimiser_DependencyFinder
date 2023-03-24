@@ -39,9 +39,11 @@ public static void main(String[] args) {
                 
                 for (i = 0; i < str.length(); i++)		/* VIOLATION*/
 	  	{
-	  	    System.out.println(i);
-	  	    
-			
+	  	   
+                       int y = 2*2;
+                       int x = 4+y;
+                   
+	  	   	
 		}
                 
     if(7>2){
@@ -51,7 +53,7 @@ public static void main(String[] args) {
 	  	    for(j = 0; j<i; i++){
                         System.out.println(i);
                         while(i < str.length()){
-                        System.out.println(i);
+                        System.out.println("While");
                     }
                     }
                     if(2>3)

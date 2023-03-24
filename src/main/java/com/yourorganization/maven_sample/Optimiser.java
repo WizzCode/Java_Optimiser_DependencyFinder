@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.github.javaparser.StaticJavaParser.parse;
+import com.github.javaparser.ast.stmt.Statement;
 
 //This class contains different methods for optimisation.
 
@@ -44,11 +45,21 @@ public class Optimiser  {
 //        System.out.println(obj.compilationUnit); //Access compilation unit used for parsing
         
         //Different methods are called here 
-        avoidMethodCalls();
-        AvoidEmptyIfStatement();
-        
-        avoidBooleanIfComparison();
-        catchPrimitivesInConstructor();
+//        avoidMethodCalls();
+//        AvoidEmptyIfStatement();
+//        
+//        avoidBooleanIfComparison();
+//        catchPrimitivesInConstructor();
+          loopInvariantCodeMotion();
+    }
+    
+    public void loopInvariantCodeMotion(){
+        VoidVisitor<List<Statement>> forBodyVisitor = new ForBodyVisitor();
+        VoidVisitor<List<Statement>> whileBodyVisitor = new WhileBodyVisitor();
+        List <Statement> collector = new ArrayList<>();
+        forBodyVisitor.visit(obj.compilationUnit,collector);
+        whileBodyVisitor.visit(obj.compilationUnit,collector);
+        for(int i=0;i<collector.size();i++) System.out.println(collector.get(i));
     }
     
    public void avoidMethodCalls(){

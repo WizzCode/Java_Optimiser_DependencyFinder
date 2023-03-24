@@ -42,9 +42,7 @@ public class IfStmtVisitor extends VoidVisitorAdapter<List<Expression>>{
                   
               
           }
-          
-          
-         
+                  
         }
         }
         
