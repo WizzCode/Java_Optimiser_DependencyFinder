@@ -1,73 +1,60 @@
-public class OptimiserInput {  
-public static void main(String[] args) {  
-    //Code of Java for loop  
-    boolean a = false;
-    int b = 24;
-    if(yesMethod()==true)
+public class OptimiserInput {
+    public static void main(String[] args) {
+        Table obj = new Table();//only one object
+        MyThread1 t1=new MyThread1(obj);
+        MyThread2 t2=new MyThread2(obj);
+        t1.start();
+        t2.start();
+
+    }
+
+
+    class Table
     {
-         if(2<7){
-             if(4<8){}
-         }
+        void printTable(int n){
+            int i=1;
 
-         if(a==true){}
+    while(i<=5){
+ synchronized (this)
+ {
+     System.out.println(n);
+     try{
+         Thread.sleep(400);
+     }
+     catch(Exception e){System.out.println(e);}
+     i++;
+ }
     }
-    
-    boolean c = true;
 
-      if((((yesMethod()==true)&&(c==false)))||(c==true))
-      {
 
-      }
-      Integer i = new Integer(23);
-      Character j = new Character('a');
-    
-    String str = "Hello";
 
-		while(str.isEmpty()){}
-		while(str.charAt(0)+str.charAt(1)=='y')	/* VIOLATION*/
-	  	{
-	  	    System.out.println(2);
-                    i=1;
-	  	    while(i<2){
-                        i++;
-                    }
-                    
-                    while(2<str.length()){
-                    }
-			
-		}
-                
-                for (i = 0; i < str.length(); i++)		/* VIOLATION*/
-	  	{
-	  	   
-                       int y = 2*2;
-                       int x = 4+y;
-                   
-	  	   	
-		}
-                
-    if(7>2){
-        for (i = 0; i < str.length(); i++)		/* VIOLATION*/
-	  	{
-	  	    System.out.println(i);
-	  	    for(j = 0; j<i; i++){
-                        System.out.println(i);
-                        while(i < str.length()){
-                        System.out.println("While");
-                    }
-                    }
-                    if(2>3)
-                    {
-                    }
-                    
-			
-		}
-       
+
+
+
+
+
+
+        }//end of the method
     }
-    
+
+    class MyThread1 extends Thread{
+        Table t;
+        MyThread1(Table t){
+            this.t=t;
+        }
+        public void run(){
+            t.printTable(5);
+        }
+
+    }
+    class MyThread2 extends Thread{
+        Table t;
+        MyThread2(Table t){
+            this.t=t;
+        }
+        public void run(){
+            t.printTable(100);
+        }
+    }
+
 }
-public static boolean yesMethod()
-{
-return true;
-}
-}  

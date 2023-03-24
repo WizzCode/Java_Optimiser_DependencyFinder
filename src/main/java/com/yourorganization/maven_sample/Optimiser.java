@@ -9,6 +9,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.IfStmt;
+import com.github.javaparser.ast.stmt.SynchronizedStmt;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
@@ -51,9 +52,11 @@ public class Optimiser  {
 //        avoidBooleanIfComparison();
 //        catchPrimitivesInConstructor();
           loopInvariantCodeMotion();
+          avoidSynchronizedInLoop();
     }
     
     public void loopInvariantCodeMotion(){
+
         VoidVisitor<List<Statement>> forBodyVisitor = new ForBodyVisitor();
         VoidVisitor<List<Statement>> whileBodyVisitor = new WhileBodyVisitor();
         List <Statement> collector = new ArrayList<>();
@@ -238,6 +241,55 @@ Node e1 = collector.get(i).getChildNodes().get(0);
                 System.out.println(objectcreationList.get(i).getBegin());
                 System.out.println(objectcreationList.get(i));
             }
+        }
+    }
+
+    public void avoidSynchronizedInLoop()
+    {
+        //forflag =2;
+        List<Statement> forStmtCollect = new ArrayList<>();
+        List<Statement> whileStmtCollect = new ArrayList<>();
+        ForBodyVisitor f_obj = new ForBodyVisitor();
+        f_obj.visit(obj.compilationUnit,forStmtCollect);
+        WhileBodyVisitor w_obj = new WhileBodyVisitor();
+        w_obj.visit(obj.compilationUnit,whileStmtCollect);
+        System.out.println("This method is used to detect synchronized statements inside Loops");
+//SynchronizedVisit svisit = new SynchronizedVisit();
+
+        for(int i=0;i<forStmtCollect.size();i++)
+        {
+            System.out.println("for stmt encountered at line "+forStmtCollect.get(i).getBegin()+" and ends at "+forStmtCollect.get(i).getEnd());
+            //System.out.println(forStmtCollect.get(i));
+            List <SynchronizedStmt> synchStatements;
+            synchStatements = forStmtCollect.get(i).findAll(SynchronizedStmt.class);
+            //System.out.println("Synchronized list size "+synchStatements.size());
+         if(synchStatements.size()>0)
+         {
+             for(int j=0;j<synchStatements.size();j++)
+             {
+                 System.out.println("Synch statement encountered at "+synchStatements.get(i).getBegin());
+                 System.out.println("Avoid Synch Statement in for loop!");
+             }
+         }
+            //svisit.visit(forStmtCollect.get(i).getBody(),synchStatements);
+        }
+
+        for(int i=0;i<whileStmtCollect.size();i++)
+        {
+            System.out.println("while stmt encountered at line "+whileStmtCollect.get(i).getBegin()+" and ends at "+whileStmtCollect.get(i).getEnd());
+            //System.out.println(forStmtCollect.get(i));
+            List <SynchronizedStmt> synchStatements;
+            synchStatements = whileStmtCollect.get(i).findAll(SynchronizedStmt.class);
+            //System.out.println("Synchronized list size "+synchStatements.size());
+            if(synchStatements.size()>0)
+            {
+                for(int j=0;j<synchStatements.size();j++)
+                {
+                    System.out.println("Synch statement encountered at "+synchStatements.get(i).getBegin());
+                    System.out.println("Avoid Synch Statement in while loop!");
+                }
+            }
+            //svisit.visit(forStmtCollect.get(i).getBody(),synchStatements);
         }
     }
    //Other methods of optimisation
