@@ -8,7 +8,7 @@ public class OptimiserInput {
           obj.input_catchPrimitivesInConstructor();
           obj.input_loopInvariantCodeMotion();
           obj.input_avoidSynchronizedInLoop();
-          
+          obj.input_avoidStringConcatenationInLoop();
     }
 
     public void input_avoidMethodCalls(){
@@ -75,6 +75,24 @@ public class OptimiserInput {
         a[i] = 6 * i + x * x;
         ++i;
         }
+    }
+    
+    public void input_avoidStringConcatenationInLoop(){
+        String result = "";
+        String[] strings = {"first","second","third"};
+        int i;
+		for (i = 0; i < strings.length; i++) 
+		{
+		 result = result + strings[i];	
+                 result = "hello";
+		}
+                i =0;
+                while(i<strings.length){
+                    if(2>3){
+                      result = "hello" + strings[i];	  
+                    }
+                    i++;
+                }
     }
           
     public void input_avoidSynchronizedInLoop(){

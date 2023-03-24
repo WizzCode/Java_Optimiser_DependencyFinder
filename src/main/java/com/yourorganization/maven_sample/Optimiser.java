@@ -30,6 +30,10 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.github.javaparser.StaticJavaParser.parse;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 
 //This class contains different methods for optimisation.
@@ -54,10 +58,79 @@ public class Optimiser  {
         System.out.println("--------------");
         catchPrimitivesInConstructor();
         System.out.println("--------------");
-        loopInvariantCodeMotion();
+//        loopInvariantCodeMotion();
+//        System.out.println("--------------");
+        avoidStringConcatenationInLoop();
         System.out.println("--------------");
         avoidSynchronizedInLoop();
         System.out.println("--------------");
+    }
+    
+    public void avoidStringConcatenationInLoop(){
+        System.out.println("This method is used to detect concatenation of strings inside loops");
+        VoidVisitor<List<Statement>> forBodyVisitor = new ForBodyVisitor();
+        VoidVisitor<List<Statement>> whileBodyVisitor = new WhileBodyVisitor();
+        VoidVisitor<List<Statement>> ifBodyVisitor = new IfBodyVisitor();
+        List <Statement> collector = new ArrayList<>();
+        List <Statement> ifcollector = new ArrayList<>();
+        forBodyVisitor.visit(obj.compilationUnit,collector);
+        whileBodyVisitor.visit(obj.compilationUnit,collector);
+        ifBodyVisitor.visit(obj.compilationUnit,ifcollector);
+        for(int i=0;i<collector.size();i++){
+            List <ExpressionStmt> exprStatements = collector.get(i).findAll(ExpressionStmt.class);
+             
+             for(int j=0;j<exprStatements.size();j++){
+                 Node expr = exprStatements.get(j).getChildNodes().get(0);
+                    
+                    if(expr instanceof AssignExpr){
+                         Expression left = ((AssignExpr)expr).getTarget();  
+                         Expression right = ((AssignExpr)expr).getValue();
+                         String datatype = left.calculateResolvedType().describe().toString();
+                         if(datatype.equalsIgnoreCase("java.lang.String") && right instanceof BinaryExpr){
+                            System.out.println("Avoid string concatenation in loops.");
+                            System.out.println(expr.getBegin());
+                            System.out.println(expr+"\n");
+                            
+                         }
+                    }
+             }
+//            BlockStmt blockThenStmt = collector.get(i).asBlockStmt();
+//            NodeList blockStatements = blockThenStmt.getStatements();
+//            for(int j = 0;j<blockStatements.size();j++){
+//                
+//                if(blockStatements.get(j) instanceof ExpressionStmt) {
+//                    Node expr = blockStatements.get(j).getChildNodes().get(0);
+//                    
+//                    if(expr instanceof AssignExpr){
+//                         Expression left = ((AssignExpr)expr).getTarget();  
+//                         Expression right = ((AssignExpr)expr).getValue();
+//                         String datatype = left.calculateResolvedType().describe().toString();
+//                         if(datatype.equalsIgnoreCase("java.lang.String") && right instanceof BinaryExpr){
+//                            System.out.println("Avoid string concatenation in loops.");
+//                            System.out.println(expr.getBegin());
+//                            System.out.println(expr);
+//                            
+//                         }
+//                    }
+//                    
+//                    else if(expr instanceof VariableDeclarationExpr){
+//                        String datatype = ((VariableDeclarationExpr)expr).getElementType().toString();
+//                        Expression right = ((VariableDeclarationExpr)expr);
+//                        
+//                        if(datatype.equalsIgnoreCase("String") && right instanceof BinaryExpr){
+//                            System.out.println("Avoid string concatenation in loops.");
+//                            System.out.println(expr.getBegin());
+//                            System.out.println(expr);
+//                            
+//                         }
+//                    }
+//                }
+//                
+//                 
+//                
+//            }
+             
+        }
     }
     
     public void loopInvariantCodeMotion(){
@@ -67,7 +140,19 @@ public class Optimiser  {
         List <Statement> collector = new ArrayList<>();
         forBodyVisitor.visit(obj.compilationUnit,collector);
         whileBodyVisitor.visit(obj.compilationUnit,collector);
-        for(int i=0;i<collector.size();i++) System.out.println(collector.get(i));
+        for(int i=0;i<collector.size();i++) {
+            System.out.println("Block");
+            System.out.println(collector.get(i).asBlockStmt());
+            System.out.println("Statement");
+            BlockStmt blockThenStmt = collector.get(i).asBlockStmt();
+             for(int j = 0;j<blockThenStmt.getStatements().size();j++){
+           if(blockThenStmt.getStatements().get(j) instanceof ExpressionStmt){
+              System.out.println(blockThenStmt.getStatements().get(j)); 
+       }         
+            System.out.println("------------");
+        }
+        
+    }
     }
     
    public void avoidMethodCalls(){
@@ -230,9 +315,10 @@ Node e1 = collector.get(i).getChildNodes().get(0);
         getCalledMethods g_obj = new getCalledMethods();
         g_obj.visit(obj.compilationUnit,objectcreationList);
         for(int i=0;i<objectcreationList.size();i++)
-        {
+        {   
+           if(objectcreationList.get(i).getChildNodes().size()>1){
             Node e =  objectcreationList.get(i).getChildNodes().get(1);
-
+           
             String typeMethod = objectcreationList.get(i).getChildNodes().get(0).toString();// type of the method
 
            String typeObject = e.getClass().getSimpleName();// type of the object passed to method
@@ -243,6 +329,8 @@ Node e1 = collector.get(i).getChildNodes().get(0);
                 System.out.println(objectcreationList.get(i).getBegin());
                 System.out.println(objectcreationList.get(i));
             }
+        }
+      
         }
     }
 
@@ -260,7 +348,7 @@ Node e1 = collector.get(i).getChildNodes().get(0);
 
         for(int i=0;i<forStmtCollect.size();i++)
         {
-            System.out.println("for stmt encountered at line "+forStmtCollect.get(i).getBegin()+" and ends at "+forStmtCollect.get(i).getEnd());
+//            System.out.println("for stmt encountered at line "+forStmtCollect.get(i).getBegin()+" and ends at "+forStmtCollect.get(i).getEnd());
             //System.out.println(forStmtCollect.get(i));
             List <SynchronizedStmt> synchStatements;
             synchStatements = forStmtCollect.get(i).findAll(SynchronizedStmt.class);
@@ -269,8 +357,10 @@ Node e1 = collector.get(i).getChildNodes().get(0);
          {
              for(int j=0;j<synchStatements.size();j++)
              {
-                 System.out.println("Synch statement encountered at "+synchStatements.get(i).getBegin());
+                 
                  System.out.println("Avoid Synch Statement in for loop!");
+                 System.out.println(synchStatements.get(j).getBegin());
+                 System.out.println(synchStatements.get(j)+"\n");
              }
          }
             //svisit.visit(forStmtCollect.get(i).getBody(),synchStatements);
@@ -278,7 +368,7 @@ Node e1 = collector.get(i).getChildNodes().get(0);
 
         for(int i=0;i<whileStmtCollect.size();i++)
         {
-            System.out.println("while stmt encountered at line "+whileStmtCollect.get(i).getBegin()+" and ends at "+whileStmtCollect.get(i).getEnd());
+//            System.out.println("while stmt encountered at line "+whileStmtCollect.get(i).getBegin()+" and ends at "+whileStmtCollect.get(i).getEnd());
             //System.out.println(forStmtCollect.get(i));
             List <SynchronizedStmt> synchStatements;
             synchStatements = whileStmtCollect.get(i).findAll(SynchronizedStmt.class);
@@ -287,8 +377,9 @@ Node e1 = collector.get(i).getChildNodes().get(0);
             {
                 for(int j=0;j<synchStatements.size();j++)
                 {
-                    System.out.println("Synch statement encountered at "+synchStatements.get(i).getBegin());
-                    System.out.println("Avoid Synch Statement in while loop!");
+                     System.out.println("Avoid Synch Statement in while loop!");
+                     System.out.println(synchStatements.get(j).getBegin());
+                     System.out.println(synchStatements.get(j)+"\n");
                 }
             }
             //svisit.visit(forStmtCollect.get(i).getBody(),synchStatements);
