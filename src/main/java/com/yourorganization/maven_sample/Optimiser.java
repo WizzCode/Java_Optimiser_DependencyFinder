@@ -66,6 +66,8 @@ public class Optimiser  {
         System.out.println("--------------");
         avoidStringTokenizer();
         System.out.println("--------------");
+        avoidNewWithString();
+        System.out.println("--------------");
     }
     
     public void avoidStringConcatenationInLoop(){
@@ -339,6 +341,11 @@ Node e1 = collector.get(i).getChildNodes().get(0);
     public void avoidSynchronizedInLoop()
     {
         //forflag =2;
+
+        // answer to explanation : https://qr.ae/przCDl
+        // You should have the loop inside the sync block.
+        // This reduces the overhead of changing thread states again and again after each cycle of loop.
+        // And the other threads don’t have any other code to complete so they can wait anyway.
         List<Statement> forStmtCollect = new ArrayList<>();
         List<Statement> whileStmtCollect = new ArrayList<>();
         ForBodyVisitor f_obj = new ForBodyVisitor();
@@ -398,7 +405,7 @@ Node e1 = collector.get(i).getChildNodes().get(0);
         List<ObjectCreationExpr> objectcreationList = new ArrayList<ObjectCreationExpr>();
         getCalledMethods g_obj = new getCalledMethods();
         g_obj.visit(obj.compilationUnit,objectcreationList);
-        System.out.println("Called methods");
+        //System.out.println("Called methods");
 for(int i=0;i<objectcreationList.size();i++)
 {
 
@@ -408,4 +415,29 @@ for(int i=0;i<objectcreationList.size();i++)
     }
 }
     }
+    public void avoidNewWithString() throws NoSuchMethodException
+    {
+        //add reference also please
+
+        // https://stackoverflow.com/a/8680451
+        // this answer points out that duplicate objects are created when using the new keyword, which can
+        // take up additional un-necessary space on the heap.
+        System.out.println("------------");
+        System.out.println("\nThis method is used to prevent usage of New Keyword with string");
+        List<ObjectCreationExpr> objectcreationList = new ArrayList<ObjectCreationExpr>();
+        getCalledMethods g_obj = new getCalledMethods();
+        g_obj.visit(obj.compilationUnit,objectcreationList);
+        //System.out.println("Called methods");
+        for(int i=0;i<objectcreationList.size();i++)
+        {
+
+            if(objectcreationList.get(i).getChildNodes().get(0).toString().equals("String"))
+            {
+                System.out.println("String Constructor Method Encountered on Line "+objectcreationList.get(i).getBegin()+". Avoid calling String Constructors for Objects that already exist on top of the heap!");
+            }
+            //System.out.println(objectcreationList.get(i));
+        }
+    }
+
+
 }

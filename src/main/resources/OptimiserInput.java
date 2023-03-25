@@ -12,6 +12,7 @@ public class OptimiserInput {
           obj.input_avoidSynchronizedInLoop();
           obj.input_avoidStringConcatenationInLoop();
           obj.input_AvoidUsingStringTokenizer();
+          obj.input_AvoidUsingNewWithString();
     }
 
     public void input_avoidMethodCalls(){
@@ -166,6 +167,19 @@ public class OptimiserInput {
         {
             System.out.println(myTokens.nextToken);
         }
+
+    }
+
+    public void input_AvoidUsingNewWithString()
+    {
+        // without typecasting
+        String s = "123";
+        String x = new String("123");
+
+        // for typecasted stuff
+
+        Integer i_int = Integer.valueOf("123");
+        Integer c_int = Integer.valueOf(new String("123"));
 
     }
 
