@@ -64,6 +64,8 @@ public class Optimiser  {
         System.out.println("--------------");
         avoidSynchronizedInLoop();
         System.out.println("--------------");
+        avoidStringTokenizer();
+        System.out.println("--------------");
     }
     
     public void avoidStringConcatenationInLoop(){
@@ -387,4 +389,23 @@ Node e1 = collector.get(i).getChildNodes().get(0);
     }
    //Other methods of optimisation
     //pass condition of ifStatement to expression statement
+
+    public void avoidStringTokenizer() throws NoSuchMethodException
+    {
+        // reference to javadocs which encourages to avoid StringTokenizer: https://docs.oracle.com/javase/6/docs/api/java/util/StringTokenizer.html
+        System.out.println("------------");
+        System.out.println("\nThis method is used to prevent usage of StringTokenizer");
+        List<ObjectCreationExpr> objectcreationList = new ArrayList<ObjectCreationExpr>();
+        getCalledMethods g_obj = new getCalledMethods();
+        g_obj.visit(obj.compilationUnit,objectcreationList);
+        System.out.println("Called methods");
+for(int i=0;i<objectcreationList.size();i++)
+{
+
+    if(objectcreationList.get(i).getChildNodes().get(0).toString().equals("StringTokenizer"))
+    {
+        System.out.println("String Tokenizer Method Encountered on Line "+objectcreationList.get(i).getBegin()+". Avoid Using String Tokenizer. Use split() method instead!");
+    }
+}
+    }
 }

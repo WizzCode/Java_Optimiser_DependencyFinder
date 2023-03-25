@@ -1,3 +1,5 @@
+import java.util.StringTokenizer;
+
 public class OptimiserInput {
     public static void main(String[] args) {
           OptimiserInput obj = new  OptimiserInput();
@@ -9,6 +11,7 @@ public class OptimiserInput {
           obj.input_loopInvariantCodeMotion();
           obj.input_avoidSynchronizedInLoop();
           obj.input_avoidStringConcatenationInLoop();
+          obj.input_AvoidUsingStringTokenizer();
     }
 
     public void input_avoidMethodCalls(){
@@ -118,7 +121,11 @@ public class OptimiserInput {
      catch(Exception e){System.out.println(e);}
      i++;
  }
+
+
     }
+
+
 
 
 
@@ -149,6 +156,17 @@ public class OptimiserInput {
         public void run(){
             t.printTable(100);
         }
+    }
+
+    public void input_AvoidUsingStringTokenizer()
+    {
+        String str = "This is a method that uses string tokenizer";
+        StringTokenizer myTokens = new StringTokenizer(str);
+        while(myTokens.hasMoreTokens())
+        {
+            System.out.println(myTokens.nextToken);
+        }
+
     }
 
 }
