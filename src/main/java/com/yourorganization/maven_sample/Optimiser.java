@@ -35,6 +35,9 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 //This class contains different methods for optimisation.
 
@@ -50,24 +53,24 @@ public class Optimiser  {
 //        System.out.println(obj.compilationUnit); //Access compilation unit used for parsing
         
         //Different methods are called here 
-        avoidMethodCalls();
-        System.out.println("--------------");
-        AvoidEmptyIfStatement();   
-        System.out.println("--------------");
-        avoidBooleanIfComparison();
-        System.out.println("--------------");
-        catchPrimitivesInConstructor();
-        System.out.println("--------------");
-//        loopInvariantCodeMotion();
+//        avoidMethodCalls();
 //        System.out.println("--------------");
-        avoidStringConcatenationInLoop();
+//        AvoidEmptyIfStatement();   
+//        System.out.println("--------------");
+//        avoidBooleanIfComparison();
+//        System.out.println("--------------");
+//        catchPrimitivesInConstructor();
+//        System.out.println("--------------");
+        loopInvariantCodeMotion();
         System.out.println("--------------");
-        avoidSynchronizedInLoop();
-        System.out.println("--------------");
-        avoidStringTokenizer();
-        System.out.println("--------------");
-        avoidNewWithString();
-        System.out.println("--------------");
+//        avoidStringConcatenationInLoop();
+//        System.out.println("--------------");
+//        avoidSynchronizedInLoop();
+//        System.out.println("--------------");
+//        avoidStringTokenizer();
+//        System.out.println("--------------");
+//        avoidNewWithString();
+//        System.out.println("--------------");
     }
     
     public void avoidStringConcatenationInLoop(){
@@ -98,65 +101,198 @@ public class Optimiser  {
                          }
                     }
              }
-//            BlockStmt blockThenStmt = collector.get(i).asBlockStmt();
-//            NodeList blockStatements = blockThenStmt.getStatements();
-//            for(int j = 0;j<blockStatements.size();j++){
-//                
-//                if(blockStatements.get(j) instanceof ExpressionStmt) {
-//                    Node expr = blockStatements.get(j).getChildNodes().get(0);
-//                    
-//                    if(expr instanceof AssignExpr){
-//                         Expression left = ((AssignExpr)expr).getTarget();  
-//                         Expression right = ((AssignExpr)expr).getValue();
-//                         String datatype = left.calculateResolvedType().describe().toString();
-//                         if(datatype.equalsIgnoreCase("java.lang.String") && right instanceof BinaryExpr){
-//                            System.out.println("Avoid string concatenation in loops.");
-//                            System.out.println(expr.getBegin());
-//                            System.out.println(expr);
-//                            
-//                         }
-//                    }
-//                    
-//                    else if(expr instanceof VariableDeclarationExpr){
-//                        String datatype = ((VariableDeclarationExpr)expr).getElementType().toString();
-//                        Expression right = ((VariableDeclarationExpr)expr);
-//                        
-//                        if(datatype.equalsIgnoreCase("String") && right instanceof BinaryExpr){
-//                            System.out.println("Avoid string concatenation in loops.");
-//                            System.out.println(expr.getBegin());
-//                            System.out.println(expr);
-//                            
-//                         }
-//                    }
-//                }
-//                
-//                 
-//                
-//            }
              
         }
     }
     
-    public void loopInvariantCodeMotion(){
+    public HashSet<NameExpr> getBinaryExprVariables(BinaryExpr binaryExpr,HashSet<NameExpr> variables){
+    
+    binaryExpr.ifBinaryExpr(binary -> {
+    Expression left = binary.getLeft();
+    Expression right = binary.getRight();
+    left.ifNameExpr(variables::add);
 
+    if(left instanceof BinaryExpr) getBinaryExprVariables((BinaryExpr)left,variables);
+    right.ifNameExpr(variables::add);
+    if(right instanceof BinaryExpr) getBinaryExprVariables((BinaryExpr)right,variables);
+});
+    return variables;
+    }
+    
+    public void loopInvariantCodeMotion(){
+        System.out.println("This method is used to detect loop invariant code");
         VoidVisitor<List<Statement>> forBodyVisitor = new ForBodyVisitor();
         VoidVisitor<List<Statement>> whileBodyVisitor = new WhileBodyVisitor();
+        VoidVisitor<List<List<Expression>>> forVariableVisitor = new ForVariableVisitor();
+        VoidVisitor<List<Expression>> whileStmtVisitor = new WhileStmtVisitor();
+        
         List <Statement> collector = new ArrayList<>();
+        List<List<Expression>> for_loop_variable_collector = new ArrayList<>();
+        List<Expression> while_loop_variable_collector = new ArrayList<>();
+        List<Node> expressions = new ArrayList<>();
+        
         forBodyVisitor.visit(obj.compilationUnit,collector);
+        
+        int for_loops_count = collector.size();
         whileBodyVisitor.visit(obj.compilationUnit,collector);
-        for(int i=0;i<collector.size();i++) {
-            System.out.println("Block");
-            System.out.println(collector.get(i).asBlockStmt());
-            System.out.println("Statement");
-            BlockStmt blockThenStmt = collector.get(i).asBlockStmt();
-             for(int j = 0;j<blockThenStmt.getStatements().size();j++){
-           if(blockThenStmt.getStatements().get(j) instanceof ExpressionStmt){
-              System.out.println(blockThenStmt.getStatements().get(j)); 
-       }         
-            System.out.println("------------");
+       
+        forVariableVisitor.visit(obj.compilationUnit,for_loop_variable_collector);
+        whileStmtVisitor.visit(obj.compilationUnit,while_loop_variable_collector);
+        
+        Optimiser obj = new Optimiser();
+        List<List<String>> reaching_def=new ArrayList<>();
+        HashMap<String,Integer> def_location = new HashMap<>();
+        //Initial status of variables, definition is inside loop then 0 else 1
+        
+        for(int i=0;i<collector.size();i++){
+        def_location = new HashMap<>();
+        reaching_def = new ArrayList<>();
+        expressions = new ArrayList<>();
+        System.out.println("------------------");
+        System.out.println("Block");
+        System.out.println(collector.get(i));
+        
+        //Getting for loop update variables
+       
+        if(i<for_loops_count){
+        List<Expression> loop_update_list = for_loop_variable_collector.get(i);
+        for(int lv = 0;lv<loop_update_list.size();lv++){
+            
+            if(loop_update_list.get(lv) instanceof AssignExpr){
+                 String left = ((AssignExpr)loop_update_list.get(lv)).getTarget().toString(); 
+                 def_location.put(left, 0);
+            }
+            else if(loop_update_list.get(lv) instanceof UnaryExpr){
+                    Expression unary = ((UnaryExpr) loop_update_list.get(lv)).getExpression();
+                    if(unary instanceof NameExpr) def_location.put(unary.toString(),0);
+                }
+        }
         }
         
+        //Getting while loop condition variables
+        else{
+            
+            Expression while_condition = while_loop_variable_collector.get(i-for_loops_count);
+            if(while_condition instanceof BinaryExpr) {
+                Expression while_left = ((BinaryExpr) while_condition).getLeft();
+                if(while_left instanceof BinaryExpr){
+                HashSet<NameExpr> while_variables = new HashSet<>();
+                while_variables = obj.getBinaryExprVariables((BinaryExpr)while_left,while_variables);
+                           List<NameExpr> variables_list = new ArrayList<NameExpr>(while_variables);
+                           for(int l =0;l<while_variables.size();l++) {
+                               String binaryexpr_string = variables_list.get(l).toString();
+                               def_location.put(binaryexpr_string,0);
+                           }
+            }
+            }
+        }
+                
+        //Analysing Loop statements
+        for (Node node : collector.get(i).getChildNodes()) {
+            List<String> statement = new ArrayList<>();
+            if (node instanceof ExpressionStmt) {
+                
+                Node expr = node.getChildNodes().get(0);
+                
+                expressions.add(expr);
+                if(expr instanceof AssignExpr){
+                         Expression array_index;                         
+                         String left = ((AssignExpr)expr).getTarget().toString(); 
+                         statement.add(left);
+                         def_location.put(left, 1);
+                         if(((AssignExpr)expr).getTarget() instanceof ArrayAccessExpr) {
+                            Expression array_left = ((AssignExpr)expr).getTarget();
+                            ArrayAccessExpr array = (ArrayAccessExpr) array_left;
+                            array_index = array.getIndex();
+                            //Only considering namexpr for now
+                            String right_string = array_index.toString();
+                            statement.add(right_string);
+                            if(!def_location.containsKey(right_string)) def_location.put(right_string,1);
+                         }
+                         
+                         Expression right = ((AssignExpr)expr).getValue();
+                         
+                         HashSet<NameExpr> variables = new HashSet<>();
+                         if(right instanceof BinaryExpr){
+                            
+                           variables = obj.getBinaryExprVariables((BinaryExpr)right,variables);
+                           List<NameExpr> variables_list = new ArrayList<NameExpr>(variables);
+                           
+                           for(int l =0;l<variables.size();l++) {
+                               String binaryexpr_string = variables_list.get(l).toString();
+                               
+                               statement.add(binaryexpr_string);
+                               if(!def_location.containsKey(binaryexpr_string)) def_location.put(binaryexpr_string,1);
+                           }
+                         }
+                         
+                         else if(right instanceof NameExpr){
+                             String right_string = right.toString();
+                             statement.add(right_string);
+                             if(!def_location.containsKey(right_string)) def_location.put(right_string,1);
+                         }
+                         
+                    }   
+                else if(expr instanceof UnaryExpr){
+                    Expression unary = ((UnaryExpr) expr).getExpression();
+                    statement.add(unary.toString());
+                    statement.add(unary.toString());
+                    if(unary instanceof NameExpr){
+                        if(def_location.containsKey(unary.toString())) def_location.replace(unary.toString(),1);
+                        else def_location.put(unary.toString(),1);
+                    }
+                }
+                
+                
+                if(!statement.isEmpty()){
+                    reaching_def.add(statement);
+                    if(statement.size()==2 && statement.get(0).equals(statement.get(1))){
+               def_location.replace(statement.get(0),0);
+           }
+                  }
+            }
+            
+        }
+//        System.out.println(reaching_def);    
+//        System.out.println(expressions);
+//        System.out.println(def_location);
+
+        //Reaching definition algorithm without nested loops
+     
+         for(int m =0;m<reaching_def.size();m++){
+
+           List<String> statement_variables = reaching_def.get(m);
+           if(statement_variables.size()>1){
+           String right_variable = statement_variables.get(0);
+           
+           
+           //Left variables
+           int count = 0;
+           for(int n =1;n<statement_variables.size();n++){
+              String left_variable = statement_variables.get(n);
+              
+              if(def_location.get(left_variable)== 1) count = count +1;
+           }
+           if(count == statement_variables.size()-1 && def_location.get(right_variable)==1){
+               System.out.println("Statement is loop invariant");
+               System.out.println(expressions.get(m).getBegin());
+               System.out.println(expressions.get(m));
+               
+           }
+           else{
+              def_location.replace(right_variable,0); 
+           }
+           
+         }
+           else{
+              System.out.println("Statement is loop invariant");
+              System.out.println(expressions.get(m).getBegin());
+              System.out.println(expressions.get(m)); 
+           }
+         } 
+        
     }
+         
     }
     
    public void avoidMethodCalls(){
