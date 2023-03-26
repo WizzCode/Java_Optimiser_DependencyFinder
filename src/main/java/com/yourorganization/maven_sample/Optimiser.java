@@ -53,24 +53,24 @@ public class Optimiser  {
 //        System.out.println(obj.compilationUnit); //Access compilation unit used for parsing
         
         //Different methods are called here 
-//        avoidMethodCalls();
-//        System.out.println("--------------");
-//        AvoidEmptyIfStatement();   
-//        System.out.println("--------------");
-//        avoidBooleanIfComparison();
-//        System.out.println("--------------");
-//        catchPrimitivesInConstructor();
-//        System.out.println("--------------");
+        avoidMethodCalls();
+        System.out.println("--------------");
+        AvoidEmptyIfStatement();   
+        System.out.println("--------------");
+        avoidBooleanIfComparison();
+        System.out.println("--------------");
+        catchPrimitivesInConstructor();
+        System.out.println("--------------");
         loopInvariantCodeMotion();
         System.out.println("--------------");
-//        avoidStringConcatenationInLoop();
-//        System.out.println("--------------");
-//        avoidSynchronizedInLoop();
-//        System.out.println("--------------");
-//        avoidStringTokenizer();
-//        System.out.println("--------------");
-//        avoidNewWithString();
-//        System.out.println("--------------");
+        avoidStringConcatenationInLoop();
+        System.out.println("--------------");
+        avoidSynchronizedInLoop();
+        System.out.println("--------------");
+        avoidStringTokenizer();
+        System.out.println("--------------");
+        avoidNewWithString();
+        System.out.println("--------------");
     }
     
     public void avoidStringConcatenationInLoop(){
@@ -219,14 +219,24 @@ public class Optimiser  {
                            List<NameExpr> variables_list = new ArrayList<NameExpr>(variables);
                            
                            for(int l =0;l<variables.size();l++) {
+                               
+                               //Right binary exp without array
                                String binaryexpr_string = variables_list.get(l).toString();
                                
                                statement.add(binaryexpr_string);
                                if(!def_location.containsKey(binaryexpr_string)) def_location.put(binaryexpr_string,1);
+                           
                            }
                          }
                          
                          else if(right instanceof NameExpr){
+                             String right_string = right.toString();
+                             statement.add(right_string);
+                             if(!def_location.containsKey(right_string)) def_location.put(right_string,1);
+                         }
+                         else if(right instanceof ArrayAccessExpr){
+                             ArrayAccessExpr array = (ArrayAccessExpr)right;
+                             array_index = array.getIndex();
                              String right_string = right.toString();
                              statement.add(right_string);
                              if(!def_location.containsKey(right_string)) def_location.put(right_string,1);
@@ -240,6 +250,7 @@ public class Optimiser  {
                     if(unary instanceof NameExpr){
                         if(def_location.containsKey(unary.toString())) def_location.replace(unary.toString(),1);
                         else def_location.put(unary.toString(),1);
+                        
                     }
                 }
                 
