@@ -8,7 +8,6 @@ public class OptimiserInput {
           obj.input_AvoidEmptyIfStatement();
           obj.input_avoidBooleanIfComparison();
           obj.input_catchPrimitivesInConstructor();
-          obj.input_loopInvariantCodeMotion();
           obj.input_avoidSynchronizedInLoop();
           obj.input_avoidStringConcatenationInLoop();
           obj.input_AvoidUsingStringTokenizer();
@@ -89,36 +88,6 @@ public class OptimiserInput {
       Character j = new Character('a');
     }
     
-    public void input_loopInvariantCodeMotion(){
-        int i = 0;
-        int[] a={1,2,3,4};
-        int x = 2;
-        int y =-7;
-        
-        for(i = 0; i < a.length; i++)
-		{
-			a[i] = x * x;		
-                        y = x+1;
-		}
-        
-        i=0;
-        int n = 3;
-        int z = 2;
-        int k = 1;
-        int j =0;
-        
-         while(i<n) {
-      x = y + z; 
-      k = 2;
-      j = i;
-      x = k;
-      x = j;
-      x = y+z;
-      a[i] = 6 * i + x * x;
-      ++i;
-
-        }
-    }
     
     public void input_avoidStringConcatenationInLoop(){
         String result = "";
