@@ -73,6 +73,8 @@ public class Optimiser  {
         System.out.println("--------------");
         avoidNewWithString();
         System.out.println("--------------");
+        avoidStringcharAt();
+        System.out.println("--------------");
         System.out.println("Optimisations Detected");
         for(int i =0;i<optimisations.size();i++){
             System.out.println(optimisations.get(i).get(0));
@@ -460,5 +462,25 @@ for(int i=0;i<objectcreationList.size();i++)
         }
     }
 
-
+public void avoidStringcharAt(){
+        System.out.println("\nThis method is used to detect use of String.charAt method");
+        justifications.put("charAt","");
+        List<MethodCallExpr> methodcallList = new ArrayList<MethodCallExpr>();
+        MethodCalls m_obj = new MethodCalls();
+        m_obj.visit(obj.compilationUnit,methodcallList);
+        for(int i=0;i<methodcallList.size();i++){
+            String methodname = methodcallList.get(i).getName().toString();
+            if(methodname.equals("charAt")){
+                System.out.println("Use char[] representation of the string instead of using String.charAt()");
+                System.out.println(methodcallList.get(i).getBegin());
+                String expr = methodcallList.get(i).getParentNode().get().toString();
+                System.out.println(expr+"\n");
+                opti = new ArrayList<>();
+                opti.add(expr);
+                opti.add(methodcallList.get(i).getBegin().get().toString());
+                opti.add("charAt");
+                optimisations.add(opti);
+            }
+        }       
+    }
 }

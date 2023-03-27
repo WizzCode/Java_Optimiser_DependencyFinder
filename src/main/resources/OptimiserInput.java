@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 public class OptimiserInput {
@@ -12,17 +14,24 @@ public class OptimiserInput {
           obj.input_avoidStringConcatenationInLoop();
           obj.input_AvoidUsingStringTokenizer();
           obj.input_AvoidUsingNewWithString();
+          obj.input_avoidStringcharAt();
     }
 
     public void input_avoidMethodCalls(){
         String str = "Hello";
         int i;
                 while(str.isEmpty()){
-                
-		while(str.charAt(0)+str.charAt(1)=='y')	
+                List<Integer> a = new ArrayList<>();
+                a.add(1);
+                a.add(2);
+                a.add(3);
+                a.add(4);
+                int j = a.size()-1;
+		while(a.get(0)<4 && a.size()>0)	
 	  	{
 	  	    System.out.println(2);
-                    		
+                    a.remove(j);
+                    j--;
 		}
                 
                 for (i = 0; i < str.length(); i++)		
@@ -106,7 +115,20 @@ public class OptimiserInput {
                     i++;
                 }
     }
-          
+    
+    public void input_avoidStringcharAt(){
+        String str ="Hello";
+        int j = 0;
+        for(int i=0; i<str.length(); i++)
+		{
+			System.out.println(str.charAt(i));	
+                        while(j<str.length()){
+                            System.out.println(str.charAt(j)+"b");
+                            j++;
+                        }
+		}
+    }   
+    
     public void input_avoidSynchronizedInLoop(){
         Table obj = new Table();//only one object
         MyThread1 t1=new MyThread1(obj);
