@@ -382,81 +382,62 @@ public class Optimiser  {
 
    }
 
-    public void avoidBooleanIfComparison() {
-        flag = 3;
-        System.out.println("This method is used for detecting unnecessary boolean comparison");
-        // check the datatype of the variable in the Expression (condition inside if) and then check
-        // if its being compared to true or false
-        IfStmtVisitor v_obj = new IfStmtVisitor();
-        List<Expression> collector = new ArrayList<>();
-        v_obj.visit(obj.compilationUnit, collector);
-//variableType v1 = new variableType();
-        for (int i = 0; i < collector.size(); i++) {
-//            System.out.println(collector.get(i));
-
-            // here u can get stuff on both sides of the and or OR
-            List<BinaryExpr> myList = new ArrayList<BinaryExpr>();
-            BinaryExprExtract b_obj = new BinaryExprExtract();
-            try
-            {
-                b_obj.visit((BinaryExpr) collector.get(i), myList);
-            }
-            catch (ClassCastException e)
-            {
-Node e1 = collector.get(i).getChildNodes().get(0);
-                while ( e1.getChildNodes().get(0) instanceof EnclosedExpr)
-                {
-                    //System.out.println(e1);
-                 e1 = e1.getChildNodes().get(0);
-                }
-                    b_obj.visit((BinaryExpr) e1.getChildNodes().get(0),myList);
-            }
-
-            for (int k = 0; k < myList.size(); k++) {
-                helperForOptimizationMethod(myList.get(k));
-                // System.out.println("printing from mlist= " + myList.get(k));
-            }
+    public void avoidBooleanIfComparison() throws IOException
+    {
 
 
-        }
-    }
-    public void helperForOptimizationMethod(BinaryExpr n) {
-        Expression leftVariable = n.getLeft();
-        // System.out.println(leftVariable.calculateResolvedType().describe());
-        String leftvarType = leftVariable.calculateResolvedType().describe().toString();
 
-        String operator = n.getOperator().toString();
-        Expression rightVariable = n.getRight();
-        // System.out.println(rightVariable.calculateResolvedType().describe());
-        String rightvarType = rightVariable.calculateResolvedType().describe().toString();
-
-// now u have to check if operator = "==" and left variable is boolean and right variable is 0
-        try
-        {
-            if (operator == "EQUALS") {
-// JUST NEED TO FIND THE CLASS OF THE LEFT VARIABLE
-                if ((leftvarType == "boolean") && (rightvarType == "boolean"))// OR DIFFERENT REGEX THAT PEOPLE USE TO CHECK STRING SIZE=0
-                {
-                   
-                    System.out.println("\nAvoid using equality with boolean expressions ");
-                    System.out.println(n.getBegin());
-                    System.out.println(n);
-                    //condition satisfied
-                }
-
-            }
-
-        }
-
-        catch (IllegalStateException e)
+        for(BinaryExpr bex : obj.compilationUnit.findAll(BinaryExpr.class))
         {
 
+            if(bex.getLeft() instanceof MethodCallExpr) {
+//                Expression mce = bex.getLeft();
+//                System.out.println("Trying to calculate type from "+ mce.toString());
+//                String type = bex.calculateResolvedType().describe();
+//                System.out.println("Type is "+ type);
+                if(((bex.getRight().toString().equals("true"))||(bex.getRight().toString().equals("false"))))
+                {
+                    System.out.println("Binary expression= "+bex.toString()+" left= "+bex.getLeft());
+
+                    System.out.println("avoid evaluating boolean in IfComparsion");
+                }
+            }
+            else {
+                if(bex.getLeft().calculateResolvedType().describe().equals("boolean")&&(((bex.getRight().toString().equals("true"))||(bex.getRight().toString().equals("false")))))
+                {
+                    System.out.println("Binary expression= "+bex.toString()+" left= "+bex.getLeft());
+
+                    System.out.println("avoid evaluating boolean in IfComparsion");
+                }
+            }
+
+            
         }
 
-
-        //Other methods of optimisation
-        //pass condition of ifStatement to expression statement
     }
+
+
+    public void avoidDuplicateCode ()
+    {
+        System.out.println("This Method is used for detecting duplicate code");
+        //IfStmtCollector i_obj = new IfStmtCollector();
+        List<IfStmt> ifstatements= new ArrayList<>();
+        //i_obj.visit(obj.compilationUnit,ifstatements);
+
+        for(int i=0;i<ifstatements.size();i++)
+        {
+            System.out.println("If Statement body");
+// resolve statements later
+            //List<Node> thenStmts =   ifstatements.get(i).getThenStmt().getChildNodes().stream().toList();
+           // List<Statement> elseStmts = ifstatements.get(i).getElseStmt().stream().toList();
+
+        }
+
+    }
+
+
+
+
 
     public void catchPrimitivesInConstructor() throws NoSuchMethodException
     {

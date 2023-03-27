@@ -40,20 +40,50 @@ public class OptimiserInput {
              if(4<8){}
          }    
     }
-    
-    public void input_avoidBooleanIfComparison(){
-        boolean a = false;
-        int b = 24;
-        if(yesMethod()==true) System.out.println("True");
-    
-        boolean c = true;
 
-        if((((yesMethod()==true)&&(c==false)))||(c==true)) System.out.println("True");
-      
+    public void input_avoidBooleanIfComparison(){
+        System.out.println("Hello world!");
+        String myStr;
+        boolean abc;
+        if(abc==true)
+        {
+
+        }
+        if(yes(1)==true)
+        {
+            System.out.println("yep");
+            //do something
+        }
+        List<Integer> myList = new ArrayList();
+        if(myList.size()>1)
+        {
+            // do something
+        }
+        if(myList.isEmpty()==true)
+        {
+            //do something else
+        }
+        if(myStr.isEmpty()>1)
+        {
+
+        }
+        if(myStr.isEmpty()==true)
+        {
+
+        }
+
     }
-    
-    public static boolean yesMethod() {return true;}
-    
+
+    static boolean yes(int choice)
+    {
+        if(choice==1)
+        {
+            return true;
+        }
+        return false;
+    }
+
+
     public void input_catchPrimitivesInConstructor(){
       Integer i = new Integer(23);
       Character j = new Character('a');
