@@ -221,7 +221,7 @@ public class OptimiserInput {
 
     }
 
-    public void input_AvoidUnnecessaryIfStatements()
+    public void input_AvoidCascadingIfStatements()
     {
         // nested if statements
         int a =0;

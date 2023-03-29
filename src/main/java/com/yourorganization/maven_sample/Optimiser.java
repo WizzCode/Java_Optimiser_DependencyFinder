@@ -513,7 +513,7 @@ public void avoidStringcharAt(){
                 if ((!visited.containsKey(expression.getChildNodes().get(0).toString())) )
                 {
 
-                    System.out.println("Ifstmt = " + ifStmt.getCondition() + " line= " + ifStmt.getBegin() + " child= " + expression.getChildNodes().get(0));
+                    System.out.println("Ifstmt = " + ifStmt.getCondition() + " line= " + ifStmt.getBegin());
 
                     visited.put(expression.getChildNodes().get(0).toString(), expression.getChildNodes().toString());
 
