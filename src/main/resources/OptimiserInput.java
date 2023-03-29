@@ -57,6 +57,14 @@ public class OptimiserInput {
         {
 
         }
+        if((((abc==true))))
+        {
+            System.out.println("its okay");
+            if((myList.isEmpty()==true))
+            {
+
+            }
+        }
         if(yes(1)==true)
         {
             System.out.println("yep");
@@ -210,6 +218,79 @@ public class OptimiserInput {
 
         Integer i_int = Integer.valueOf("123");
         Integer c_int = Integer.valueOf(new String("123"));
+
+    }
+
+    public void input_AvoidUnnecessaryIfStatements()
+    {
+        // nested if statements
+        int a =0;
+        int b=1;
+        int c=-1;
+        List<Integer> yList = new ArrayList<Integer>();
+        if(a==0)
+        {
+            if(b==1)
+            {
+                System.out.println("hurray b");
+                if(c==-1)
+                {
+                   System.out.println("hurray c");
+                }
+                else {
+
+                }
+            }
+            else if(b==2) {
+                System.out.println("hurray no b");
+            }
+            else if(b==3)
+            {
+                System.out.println("okayyiiee");
+            }
+            else
+            {
+                System.out.println("yum yum");
+            }
+        }
+
+        else if(a==1)
+        {
+            System.out.println("yuck");
+        }
+
+        else if(a==2)
+        {
+            System.out.println("run away");
+        }
+
+        else
+        {
+            System.out.println("okay whatever");
+        }
+
+
+int n=-1;
+        if(yList.size()==1&&(n==-1))
+        {
+
+        }
+        else if(yList.size()==2&&(n==-2))
+        {
+
+        }
+        else if(yList.size()==3||(n==-4))
+        {
+
+        }
+        else if(yList.size()==3||(n==-5))
+        {
+
+        }
+        else {
+
+        }
+
 
     }
 

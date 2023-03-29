@@ -44,6 +44,8 @@ import java.util.Set;
 
 public class Optimiser  {
     static int flag;
+
+    static int ifflag;
     static List<List<String>> optimisations = new ArrayList<>();
     static List<String> opti;
     static HashMap<String,String> justifications = new HashMap<>();
@@ -59,7 +61,7 @@ public class Optimiser  {
         //Different methods are called here 
         avoidMethodCalls();
         System.out.println("--------------");
-        AvoidEmptyIfStatement();   
+        AvoidEmptyIfStatement();
         System.out.println("--------------");
         avoidBooleanIfComparison();
         System.out.println("--------------");
@@ -74,6 +76,8 @@ public class Optimiser  {
         avoidNewWithString();
         System.out.println("--------------");
         avoidStringcharAt();
+        System.out.println("--------------");
+        avoid_Cascading_IfStatements();
         System.out.println("--------------");
         System.out.println("Optimisations Detected");
         for(int i =0;i<optimisations.size();i++){
@@ -482,5 +486,64 @@ public void avoidStringcharAt(){
                 optimisations.add(opti);
             }
         }       
+    }
+
+    public void avoid_Cascading_IfStatements()
+    {
+        // if the IfStatements are nested , they can be converted to a single IfStatement with && and ||.
+        // If they're individual , they can be converted to switch statements that has significant
+        // performance benefits
+        // switch statements are to be considered ONLY WHEN THE NUMBER OF IF-ELSE STATEMENTS IS TOO LARGE
+// if-else statements will be multiple only for equality. for checking with unequalness , example
+        // a>2 , there will be only 2 statements , an if and a corresponding else
+        // broken code if same variable is used in different ifstmts
+        System.out.println("This method is used to detect and offer better suggestions for cascading If Statements");
+        HashMap<String,String> visited = new HashMap<String, String>();
+
+        for (IfStmt ifStmt : obj.compilationUnit.findAll(IfStmt.class)) {
+
+            Node expression = ifStmt.getCondition();
+
+            while (expression instanceof EnclosedExpr) {
+                expression = expression.getChildNodes().get(0);
+
+            }
+            if ((!expression.toString().contains("&&")) && (!expression.toString().contains("||")))// can only be used when there's a single condition
+            {
+                if ((!visited.containsKey(expression.getChildNodes().get(0).toString())) )
+                {
+
+                    System.out.println("Ifstmt = " + ifStmt.getCondition() + " line= " + ifStmt.getBegin() + " child= " + expression.getChildNodes().get(0));
+
+                    visited.put(expression.getChildNodes().get(0).toString(), expression.getChildNodes().toString());
+
+                    int count = 1;
+
+                    while (ifStmt.getElseStmt().isPresent()) { // these are all the else-ifs which can be
+                        // casted into IfStmts
+
+                        Statement elseStmt = ifStmt.getElseStmt().get();
+                        if (elseStmt instanceof IfStmt) {
+
+                            count++;
+                            System.out.println("corresponding else-if= " + ((IfStmt) elseStmt).getCondition());
+
+                            ifStmt = (IfStmt) elseStmt;
+
+                        } else {
+                            count++;
+                            System.out.println("corresponding final else = " + ifStmt.getElseStmt());
+
+                            break;
+                        }
+                    }
+                    if (count > 2) {
+                        System.out.println("Depth of if-else statements is " + count + " Avoid using if-else when depth is more than 2. Use switch statement instead");
+                    }
+                }
+
+        }
+        }
+
     }
 }
