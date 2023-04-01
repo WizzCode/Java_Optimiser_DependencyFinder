@@ -14,6 +14,7 @@ public class Dependency {
     public ArrayList<String> attribute_array=new ArrayList<String>();
     public ArrayList<String> right=new ArrayList<String>();
     public HashMap<String,ArrayList<String>> dependence_dict = new HashMap<String,ArrayList<String>>();
+    public String path;
 //    public static void main(String[] args) throws FileNotFoundException, Exception {
 //
 //        Dependency vdobj = new Dependency();
@@ -23,7 +24,11 @@ public class Dependency {
 //        vdobj.attributeDependencyMatrix();
 //
 //    }
-    
+
+    public Dependency(String path) {
+        this.path = path;
+    }
+
     public void calldependency() throws FileNotFoundException, Exception{
         System.out.println("Calling Dependency Finder");
         dependencyinput();
@@ -34,7 +39,7 @@ public class Dependency {
     public void dependencyinput() throws FileNotFoundException, Exception{
 
         SymbolTableGenerator obj = new SymbolTableGenerator();
-        obj.symbolsolverparsing();
+        obj.symbolsolverparsing(this.path);
         ProgramAttributes obj2=  obj.attributes();
         attribute_array=obj2.attribute_array;
         right=obj2.right;

@@ -11,9 +11,15 @@ public class VariableDependency {
     public ArrayList<String> variable_array=new ArrayList<String>();
     public ArrayList<String> right=new ArrayList<String>();
     public HashMap<String,ArrayList<String>> dependence_dict = new HashMap<String,ArrayList<String>>();
+    public String path;
+
+    public VariableDependency(String path) {
+        this.path = path;
+    }
+
     public static void main(String[] args) throws FileNotFoundException {
 
-        VariableDependency vdobj = new VariableDependency();
+        VariableDependency vdobj = new VariableDependency("src/main/resources/OptimiserInput.java");
         vdobj.vdInput();
         vdobj.variableDependencyAlgo();
         vdobj.variableDependencyMatrix();
@@ -25,7 +31,7 @@ public class VariableDependency {
         SymbolTableGenerator obj = new SymbolTableGenerator();
 
 //        obj.parseInputCode("SampleProgramNew.java");
-        obj.symbolsolverparsing();
+        obj.symbolsolverparsing(this.path);
         System.out.println("CU"+obj.compilationUnit);
         VariableAttributes obj2=  obj.variableDependencyInput();
         System.out.println("list of all variables ");

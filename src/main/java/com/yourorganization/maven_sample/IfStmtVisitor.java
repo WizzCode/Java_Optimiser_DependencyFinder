@@ -29,7 +29,7 @@ public class IfStmtVisitor extends VoidVisitorAdapter<List<Expression>>{
  public void visit(IfStmt ifStmt, List<Expression> collector) {
          
 
-        Optimiser obj = new Optimiser();
+        Optimiser obj = new Optimiser("");
         flag = obj.flag;
         optimisations = obj.optimisations;
         opti = obj.opti;

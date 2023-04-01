@@ -46,16 +46,21 @@ public class Optimiser  {
     static int flag;
 
     static int ifflag;
-    static List<List<String>> optimisations = new ArrayList<>();
+    List<List<String>> optimisations = new ArrayList<>();
     static List<String> opti;
     static HashMap<String,String> justifications = new HashMap<>();
+    public String path;
     
     SymbolTableGenerator obj = new SymbolTableGenerator();
-    
+
+    public Optimiser(String path) {
+        this.path = path;
+    }
+
     //This method is called in the Main class which has the main method and is the entry point of the project
     public void calloptimiser() throws FileNotFoundException, Exception{
         System.out.println("Calling Optimiser");
-        obj.symbolsolverparsing();
+        obj.symbolsolverparsing(this.path);
 //        System.out.println(obj.compilationUnit); //Access compilation unit used for parsing
         
         //Different methods are called here 
@@ -545,5 +550,13 @@ public void avoidStringcharAt(){
         }
         }
 
+    }
+
+    public List<List<String>> getOptimisations() {
+        return optimisations;
+    }
+
+    public static HashMap<String, String> getJustifications() {
+        return justifications;
     }
 }
