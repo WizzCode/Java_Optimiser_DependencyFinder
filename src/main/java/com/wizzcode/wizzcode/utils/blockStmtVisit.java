@@ -1,6 +1,5 @@
-package com.yourorganization.maven_sample;
+package com.wizzcode.wizzcode.utils;
 
-import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.stmt.IfStmt;

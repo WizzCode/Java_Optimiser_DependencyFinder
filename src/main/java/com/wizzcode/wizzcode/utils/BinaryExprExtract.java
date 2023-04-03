@@ -1,4 +1,4 @@
-package com.yourorganization.maven_sample;
+package com.wizzcode.wizzcode.utils;
 
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;

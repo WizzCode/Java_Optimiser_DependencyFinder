@@ -1,4 +1,4 @@
-package com.yourorganization.maven_sample;
+package com.wizzcode.wizzcode.CodeDependencyFinder;
 
 import java.io.FileNotFoundException;
 import java.util.*;
@@ -6,7 +6,6 @@ import java.util.*;
 
 import com.aspose.cells.Cells;
 import com.aspose.cells.Workbook;
-import com.aspose.cells.License;
 import com.aspose.cells.Worksheet;
 
 

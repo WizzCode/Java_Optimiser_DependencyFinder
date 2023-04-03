@@ -1,4 +1,4 @@
-package com.yourorganization.maven_sample;
+package com.wizzcode.wizzcode.CodeDependencyFinder;
 
 
 import java.util.ArrayList;
