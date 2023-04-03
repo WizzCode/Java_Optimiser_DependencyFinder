@@ -19,7 +19,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.resolution.declarations.*;
 import com.github.javaparser.resolution.types.ResolvedType;
 
-public class JavaSymbolSolverUtils {
+public class JavaParserUtils {
     //filePath should be of the form "src/main/resources/FileName.java"
     public CompilationUnit astUsingJavaSymbolSolver(String filePath) throws IOException{
         Path pathToSource = Paths.get(filePath);
