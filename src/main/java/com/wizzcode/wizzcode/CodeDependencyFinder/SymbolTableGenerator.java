@@ -34,6 +34,7 @@ public class SymbolTableGenerator {
     public JavaSymbolSolver symbolSolver;
     public CompilationUnit compilationUnit;
     ProgramAttributes paObj = new ProgramAttributes();
+    JavaParserUtils jpObj = new JavaParserUtils();
 
     public void symbolsolverparsing(String path) throws FileNotFoundException {
         System.out.println("Creating Compilation Unit");
@@ -74,10 +75,28 @@ public class SymbolTableGenerator {
             dependents.add(currentNode);
         paObj.dependence_dict.put(dependentNode, dependents);
     }
+    
+    private ArrayList<String> evalBinaryExprAttributes(String className, String methodName, ArrayList<Node> subExprList, ArrayList<String> dependents){
+       String name;
+
+       for (int i = 0; i < subExprList.size(); i++) {
+
+            name = jpObj.getQualifiedName(subExprList.get(i));
+            if (!name.contains(".") && !name.equals(""))
+                name = className + "." + methodName + "." + name;
+            if (!name.equals(""))
+                System.out.println("Qualified Name: " + name);
+            addToRightArray(name);
+            if (!name.equals("") && !dependents.contains(name))
+                dependents.add(name);
+
+        }
+       return dependents;
+    }
 
     public ProgramAttributes attributes() {
 
-        JavaParserUtils jpObj = new JavaParserUtils();
+//        JavaParserUtils jpObj = new JavaParserUtils();
 //        ProgramAttributes paObj = new ProgramAttributes();
 
         System.out.println("-------------------------------");
@@ -121,19 +140,9 @@ public class SymbolTableGenerator {
                     }
 
                     else if (parentNode instanceof BinaryExpr) {
-                        name = "";
-
                         ArrayList<Node> subExprList = new ArrayList<>(parentNode.getChildNodes());
-                        for (int i = 0; i < subExprList.size(); i++) {
-                            name = jpObj.getQualifiedName(subExprList.get(i));
-                            if (!name.equals(""))
-                                System.out.println("Qualified Name: " + name);
-                            addToAttributeArray(name);
-                            addToRightArray(name);
+                        dependents = evalBinaryExprAttributes("","",subExprList,dependents);
 
-                            if (!dependents.contains(name) && !name.equals(""))
-                                dependents.add(name);
-                        }
                     } else {
                         name = jpObj.getQualifiedName(parentNode);
                         if (!name.equals(""))
@@ -195,21 +204,12 @@ public class SymbolTableGenerator {
                                 addToDependenceDict(cname, name);
 
                             } else if (parentNode instanceof BinaryExpr) {
-                                name = "";
-
                                 ArrayList<Node> subExprList = new ArrayList<>(parentNode.getChildNodes());
-                                for (int i = 0; i < subExprList.size(); i++) {
-
-                                    name = jpObj.getQualifiedName(subExprList.get(i));
-                                    if (!name.contains(".") && !name.equals(""))
-                                        name = classOrInterface.getNameAsString() + "." + method.getNameAsString() + "." + name;
-                                    if (!name.equals(""))
-                                        System.out.println("Qualified Name: " + name);
-                                    addToRightArray(name);
-                                    if (!name.equals("") && !dependents.contains(name))
-                                        dependents.add(name);
-
-                                }
+                                dependents = evalBinaryExprAttributes(
+                                        classOrInterface.getNameAsString(),
+                                        method.getNameAsString(),
+                                                 subExprList, dependents );
+                                
 
                             } else {
                                 name = jpObj.getQualifiedName(parentNode);
@@ -227,11 +227,9 @@ public class SymbolTableGenerator {
                         for (NameExpr nameExp : blockStatement.findAll(NameExpr.class)) {
                             dependents = new ArrayList<String>();
                             if (nameExp.getNameAsString().equals(variable.getNameAsString())) {
-                                // System.out.println("Qualified Name: "
-                                // +classOrInterface.getNameAsString()+"."+method.getNameAsString()+"."+nameExp.getNameAsString());
+
                                 Node parentNode = nameExp.getParentNode().get();
-                                // System.out.println("Variable used in Expression: "+parentNode);
-                                // System.out.println("Expression type: "+parentNode.getClass());
+
                                 if (parentNode instanceof MethodCallExpr) {
                                     String qname = classOrInterface.getNameAsString() + "." + method.getNameAsString();
                                     String name = jpObj.getQualifiedName(parentNode);
@@ -265,21 +263,14 @@ public class SymbolTableGenerator {
 
                                     System.out.println("RHS: " + right);
                                     if (right instanceof BinaryExpr) {
-                                        //
+                                        
                                         ArrayList<Node> subExprList = new ArrayList<>(right.getChildNodes());
-                                        for (int i = 0; i < subExprList.size(); i++) {
-                                            name = jpObj.getQualifiedName(subExprList.get(i));
-                                            if (!name.contains(".") && !name.equals(""))
-                                                name = classOrInterface.getNameAsString() + "." + method.getNameAsString() + "."
-                                                        + name;
-                                            addToRightArray(name);
-                                            if (!name.equals("") && !dependents.contains(name))
-                                                dependents.add(name);
-
-                                            if (!name.equals(""))
-                                                System.out.println("RHS Qualified Name: " + name);
-                                        }
+                                       dependents = evalBinaryExprAttributes(
+                                        classOrInterface.getNameAsString(),
+                                        method.getNameAsString(),
+                                                 subExprList, dependents );
                                     }
+                                    
                                     addToAttributeArray(leftstr);
                                     if (!dependents.isEmpty())
                                         paObj.dependence_dict.put(leftstr, dependents);
