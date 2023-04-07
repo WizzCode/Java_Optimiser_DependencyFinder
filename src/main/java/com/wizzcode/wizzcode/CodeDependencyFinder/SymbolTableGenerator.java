@@ -3,7 +3,7 @@ package com.wizzcode.wizzcode.CodeDependencyFinder;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.utils.SourceRoot;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.JavaParser;
@@ -11,11 +11,6 @@ import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
@@ -25,6 +20,7 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeS
 import com.wizzcode.wizzcode.utils.JavaParserUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SymbolTableGenerator {
     public CompilationUnit cu;
@@ -67,248 +63,167 @@ public class SymbolTableGenerator {
     }
 
     private void addToDependenceDict(String dependentNode, String currentNode){
-        ArrayList<String> dependents = new ArrayList<String>();
+        ArrayList<String> dependencySources = new ArrayList<String>();
+        //dependence dict: key depends on list of values
+
         if (paObj.dependence_dict.containsKey(dependentNode)) {
-            dependents = paObj.dependence_dict.get(dependentNode);
+            dependencySources = paObj.dependence_dict.get(dependentNode);
         }
-        if (!currentNode.equals("") && !dependents.contains(currentNode))
-            dependents.add(currentNode);
-        paObj.dependence_dict.put(dependentNode, dependents);
+        if (!currentNode.equals("") && !dependencySources.contains(currentNode)) {
+            dependencySources.add(currentNode);
+        }
+        paObj.dependence_dict.put(dependentNode, dependencySources);
     }
-    
-    private ArrayList<String> evalBinaryExprAttributes(String className, String methodName, ArrayList<Node> subExprList, ArrayList<String> dependents){
-       String name;
 
-       for (int i = 0; i < subExprList.size(); i++) {
+    private void addToDependenceDict(String dependentNode, String currentNode, ArrayList<String> dependencySources) {
+        if (!currentNode.equals("") && !dependencySources.contains(currentNode)) {
+            dependencySources.add(currentNode);
+        }
+        paObj.dependence_dict.put(dependentNode, dependencySources);
+    }
 
+    private ArrayList<String> evalBinaryExprAttributes(String methodName, ArrayList<Node> subExprList, ArrayList<String> dependencySources) {
+        String name;
+        for (int i = 0; i < subExprList.size(); i++) {
             name = jpObj.getQualifiedName(subExprList.get(i));
-            if (!name.contains(".") && !name.equals(""))
-                name = className + "." + methodName + "." + name;
-            if (!name.equals(""))
-                System.out.println("Qualified Name: " + name);
+            if (!name.contains(".") && !name.equals("")){
+                name = methodName + "." + name;
+            }
+            addToAttributeArray(name);
             addToRightArray(name);
-            if (!name.equals("") && !dependents.contains(name))
-                dependents.add(name);
-
+            if (!name.equals("") && !dependencySources.contains(name)){
+                dependencySources.add(name);
+            }
         }
-       return dependents;
+        return dependencySources;
     }
 
-    public ProgramAttributes attributes() {
+    private void findDependenciesInRHS(Expression expr, String name, String parentName, ArrayList<String> dependencySources) {
+        String qualifiedName = "";
+        if (expr instanceof MethodCallExpr) {
+            qualifiedName = jpObj.getQualifiedName(expr);
+            addToAttributeArray(qualifiedName);
+            addToRightArray(qualifiedName);
+            addToDependenceDict(name, qualifiedName, dependencySources);
+        } else if (expr instanceof ObjectCreationExpr) {
+            qualifiedName = jpObj.getQualifiedName(expr);
+            addToAttributeArray(qualifiedName);
+            addToRightArray(qualifiedName);
+            addToDependenceDict(name, qualifiedName, dependencySources);
+        } else if (expr instanceof BinaryExpr) {
+            ArrayList<Node> subExprList = new ArrayList<>(expr.getChildNodes());
+            dependencySources = evalBinaryExprAttributes(parentName, subExprList, dependencySources);
+            paObj.dependence_dict.put(name, dependencySources);
+        } else {
+            qualifiedName = jpObj.getQualifiedName(expr);
+            addToAttributeArray(qualifiedName);
+            addToRightArray(qualifiedName);
+            addToDependenceDict(name, qualifiedName, dependencySources);
+        }
+    }
 
-//        JavaParserUtils jpObj = new JavaParserUtils();
-//        ProgramAttributes paObj = new ProgramAttributes();
+    public ProgramAttributes findAttributes() {
+        //adding all method declarations to attribute array
+        List<MethodDeclaration> methods = compilationUnit.findAll(MethodDeclaration.class);
+        for (MethodDeclaration method : methods) {
+            String methodQualifiedName = jpObj.getQualifiedName(method);
+            addToAttributeArray(methodQualifiedName);
+        }
 
-        System.out.println("-------------------------------");
-
+        //---------------------LOOP FOR CLASSES---------------------
         for (ClassOrInterfaceDeclaration classOrInterface : compilationUnit.findAll(ClassOrInterfaceDeclaration.class)) {
 
+            //className
             String classOrInterfaceName = classOrInterface.getNameAsString();
-            System.out.println("Class: " + classOrInterfaceName);
-
             addToAttributeArray(classOrInterfaceName);
 
-            System.out.println("Class Variables: ");
-            for (FieldDeclaration ff : classOrInterface.getFields()) {
-                System.out.println("Qualified Name: " + classOrInterfaceName + "." + ff.getVariable(0).getName());
-                ArrayList<String> dependents = new ArrayList<String>();
-                String qname = classOrInterfaceName + "." + ff.getVariable(0).getName();
-                if (paObj.dependence_dict.containsKey(qname)) {
-                    dependents = paObj.dependence_dict.get(qname);
+            //---------------------LOOP FOR CLASS VARIABLES---------------------
+            for (FieldDeclaration fieldDeclaration : classOrInterface.getFields()) {
+                //fieldDeclaration type contains entire line of code where a class variable has been declared
+
+                if (fieldDeclaration.getVariables().size() > 0) {
+                    VariableDeclarator fieldDeclarationAsVD = fieldDeclaration.getVariable(0);
+                    String fieldName = classOrInterfaceName + "." + fieldDeclarationAsVD.getName();
+
+                    addToAttributeArray(fieldName);
+                    addToDependenceDict(classOrInterfaceName, fieldName); //class depends on the field
+
+                    if (fieldDeclarationAsVD.getInitializer().isPresent()) {
+                        Expression fieldInitializerExpr = fieldDeclarationAsVD.getInitializer().get();
+                        ArrayList<String> dependencySources = new ArrayList<String>();
+                        if (paObj.dependence_dict.containsKey(fieldName)) {
+                            dependencySources = paObj.dependence_dict.get(fieldName);
+                        }
+                        findDependenciesInRHS(fieldInitializerExpr, fieldName, classOrInterfaceName, dependencySources);
+                    }
                 }
-                addToAttributeArray(qname);
-
-                if (ff.getVariable(0).getInitializer().isPresent()) {
-
-                    Node parentNode = ff.getVariable(0).getInitializer().get();
-                    String name = "";
-                    if (parentNode instanceof MethodCallExpr) {
-                        name = jpObj.getQualifiedName(parentNode);
-                        if (!name.equals(""))
-                            System.out.println("Qualified Name: " + name);
-
-                    }
-
-                    else if (parentNode instanceof ObjectCreationExpr) {
-                        name = ff.getVariable(0).getType().toString();
-                        System.out.println(
-                                "Qualified name of class whose obj is created: " + ff.getVariable(0).getType());
-                        String cname = classOrInterface.getNameAsString();
-
-                        addToDependenceDict(cname, name);
-
-                    }
-
-                    else if (parentNode instanceof BinaryExpr) {
-                        ArrayList<Node> subExprList = new ArrayList<>(parentNode.getChildNodes());
-                        dependents = evalBinaryExprAttributes("","",subExprList,dependents);
-
-                    } else {
-                        name = jpObj.getQualifiedName(parentNode);
-                        if (!name.equals(""))
-                            System.out.println("Qualified Name: " + name);
-                    }
-
-                    addToAttributeArray(name);
-                    addToRightArray(name);
-                    if (!dependents.contains(name) && !name.equals(""))
-                        dependents.add(name);
-                    String temp = classOrInterface.getNameAsString() + "." + ff.getVariable(0).getName();
-                    if (!dependents.isEmpty())
-                        paObj.dependence_dict.put(temp, dependents);
-                }
-
             }
 
+            //---------------------LOOP FOR METHODS---------------------
             for (MethodDeclaration method : classOrInterface.getMethods()) {
+                String methodName = jpObj.getQualifiedName(method);
+                addToDependenceDict(classOrInterfaceName, methodName);
 
-                System.out.println("Method: ");
-                String methodName = classOrInterface.getNameAsString() + "." + method.getNameAsString();
-                System.out.println("Qualified Name: " + methodName);
-                addToAttributeArray(methodName);
-                System.out.println("Method Variables");
-
+                //DECLARATIONS INSIDE METHOD
                 method.getBody().ifPresent(blockStatement -> {
-
                     for (VariableDeclarator variable : blockStatement.findAll(VariableDeclarator.class)) {
+                        String lhsDeclarationName = methodName + "." + variable.getNameAsString();
 
-                        ArrayList<String> dependents = new ArrayList<String>();
-                        String lhsDecname = methodName + "." + variable.getNameAsString();
-                        if (paObj.dependence_dict.containsKey(lhsDecname)) {
-                            dependents = paObj.dependence_dict.get(lhsDecname);
-                        }
+                        addToAttributeArray(lhsDeclarationName);
+                        addToDependenceDict(methodName, lhsDeclarationName); //method depends on the variable
 
                         if (variable.getInitializer().isPresent()) {
-
-                            addToAttributeArray(lhsDecname);
-                            if (!lhsDecname.equals(""))
-                                System.out.println("Qualified name: " + lhsDecname);
-
-                            Node parentNode = variable.getInitializer().get();
-                            String name = "";
-
-                            if (parentNode instanceof MethodCallExpr) {
-                                String qname = classOrInterface.getNameAsString() + "." + method.getNameAsString();
-
-                                name = jpObj.getQualifiedName(parentNode);
-                                addToDependenceDict(qname, name);
-                                if (!name.equals(""))
-                                    System.out.println("Qualified Name: " + name);
+                            Expression rightExpr = variable.getInitializer().get();
+                            ArrayList<String> dependencySources = new ArrayList<String>();
+                            if (paObj.dependence_dict.containsKey(lhsDeclarationName)) {
+                                dependencySources = paObj.dependence_dict.get(lhsDeclarationName);
                             }
+                            findDependenciesInRHS(rightExpr, lhsDeclarationName, methodName, dependencySources);
+                        }
+                    }
 
-                            else if (parentNode instanceof ObjectCreationExpr) {
-                                name = variable.getTypeAsString();
-                                System.out
-                                        .println("Qualified name of class whose obj is created: " + variable.getType());
-                                String cname = classOrInterface.getNameAsString();
-                                addToDependenceDict(cname, name);
-
-                            } else if (parentNode instanceof BinaryExpr) {
-                                ArrayList<Node> subExprList = new ArrayList<>(parentNode.getChildNodes());
-                                dependents = evalBinaryExprAttributes(
-                                        classOrInterface.getNameAsString(),
-                                        method.getNameAsString(),
-                                                 subExprList, dependents );
-                                
-
-                            } else {
-                                name = jpObj.getQualifiedName(parentNode);
-                                if (!name.equals(""))
-                                    System.out.println("Qualified Name: " + name);
-                            }
-                            addToAttributeArray(name);
-                            addToRightArray(name);
-                            if (!dependents.contains(name) && !name.equals(""))
-                                dependents.add(name);
-                            if (!dependents.isEmpty())
-                                paObj.dependence_dict.put(lhsDecname, dependents);
+                    //ASSIGNMENTS INSIDE METHOD
+                    for (AssignExpr assignExpr : blockStatement.findAll(AssignExpr.class)) {
+                        Expression lhsVariable = assignExpr.getTarget();
+                        String lhsVariableName = jpObj.getQualifiedName(lhsVariable);
+                        if (!lhsVariableName.contains(".") && !lhsVariableName.equals("")) {
+                            lhsVariableName = methodName + "." + lhsVariableName;
                         }
 
-                        for (NameExpr nameExp : blockStatement.findAll(NameExpr.class)) {
-                            dependents = new ArrayList<String>();
-                            if (nameExp.getNameAsString().equals(variable.getNameAsString())) {
+                        addToAttributeArray(lhsVariableName);
+                        addToDependenceDict(methodName, lhsVariableName); //method depends on the variable
 
-                                Node parentNode = nameExp.getParentNode().get();
-
-                                if (parentNode instanceof MethodCallExpr) {
-                                    String qname = classOrInterface.getNameAsString() + "." + method.getNameAsString();
-                                    String name = jpObj.getQualifiedName(parentNode);
-
-                                    addToDependenceDict(qname, name);
-                                    if (!name.equals(""))
-                                        System.out.println("Qualified Name: " + name);
-                                    addToAttributeArray(name);
-                                    addToRightArray(name);
-                                }
-
-                                else if (parentNode instanceof ObjectCreationExpr) {
-                                    System.out.println(
-                                            "Qualified name of class whose obj is created: " + variable.getType());
-                                    String objVariableName = variable.getType().toString();
-                                    addToAttributeArray(objVariableName);
-                                    String cname = classOrInterface.getNameAsString();
-                                    addToDependenceDict(cname, objVariableName);
-
-
-                                } else if (parentNode instanceof AssignExpr) {
-                                    String name = "";
-
-                                    Expression left = ((AssignExpr) parentNode).getTarget();
-                                    Expression right = ((AssignExpr) parentNode).getValue();
-                                    System.out.println("LHS: " + left);
-                                    String leftstr = jpObj.getQualifiedName(left);
-                                    if (!leftstr.contains(".") && !leftstr.equals(""))
-                                        leftstr = classOrInterface.getNameAsString() + "." + method.getNameAsString() + "." + leftstr;
-                                    System.out.println("LHS Qualified Name: " + leftstr);
-
-                                    System.out.println("RHS: " + right);
-                                    if (right instanceof BinaryExpr) {
-                                        
-                                        ArrayList<Node> subExprList = new ArrayList<>(right.getChildNodes());
-                                       dependents = evalBinaryExprAttributes(
-                                        classOrInterface.getNameAsString(),
-                                        method.getNameAsString(),
-                                                 subExprList, dependents );
-                                    }
-                                    
-                                    addToAttributeArray(leftstr);
-                                    if (!dependents.isEmpty())
-                                        paObj.dependence_dict.put(leftstr, dependents);
-
-                                } else {
-                                    String name = jpObj.getQualifiedName(parentNode);
-                                    if (!name.equals(""))
-                                        System.out.println("Qualified Name: " + name);
-                                    addToAttributeArray(name);
-                                }
-
-                            }
-
+                        Expression right = (assignExpr).getValue();
+                        ArrayList<String> dependencySources = new ArrayList<String>();
+                        if (paObj.dependence_dict.containsKey(lhsVariableName)) {
+                            dependencySources = paObj.dependence_dict.get(lhsVariableName);
                         }
+                        findDependenciesInRHS(right, lhsVariableName, methodName, dependencySources);
+                    }
 
+                    //METHOD CALLS INSIDE METHOD
+                    for (MethodCallExpr methodCallExpr : blockStatement.findAll(MethodCallExpr.class)) {
+                        String methodCallName = jpObj.getQualifiedName(methodCallExpr);
+
+//                        addToAttributeArray(methodCallName);
+                        if (paObj.attribute_array.contains(methodCallName)) {
+                            addToRightArray(methodCallName);
+                            addToDependenceDict(methodName, methodCallName); //Method depends on called method
+
+                            if (methodCallExpr.isAssignExpr()) {
+                                Expression lhsVariable = methodCallExpr.toAssignExpr().get().getTarget();
+                                String lhsVariableName = jpObj.getQualifiedName(lhsVariable);
+
+                                addToAttributeArray(lhsVariableName);
+                                addToDependenceDict(methodName, lhsVariableName); //method depends on the variable
+                                addToDependenceDict(lhsVariableName, methodCallName);
+                            }
+                        }
                     }
                 });
             }
         }
-        System.out.println("-------------Attribute array------------------");
-
-        for (int i = 0; i < paObj.attribute_array.size(); i++)
-            System.out.println(paObj.attribute_array.get(i));
-
-        System.out.println("-------------Right array------------------");
-        for (int i = 0; i < paObj.right.size(); i++)
-            System.out.println(paObj.right.get(i));
-
-        System.out.println("-------------Dep dict------------------");
-
-        for (String name : paObj.dependence_dict.keySet()) {
-            String key = name.toString();
-            ArrayList<String> value = paObj.dependence_dict.get(name);
-            System.out.println(key + " " + value);
-        }
-
         return paObj;
-
     }
 
     public static boolean isStringOnlyAlphabet(String str) {

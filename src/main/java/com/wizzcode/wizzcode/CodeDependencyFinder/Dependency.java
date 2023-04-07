@@ -39,7 +39,7 @@ public class Dependency {
 
         SymbolTableGenerator obj = new SymbolTableGenerator();
         obj.symbolsolverparsing(this.path);
-        ProgramAttributes obj2=  obj.attributes();
+        ProgramAttributes obj2=  obj.findAttributes();
         attribute_array=obj2.attribute_array;
         right=obj2.right;
         dependence_dict=obj2.dependence_dict;

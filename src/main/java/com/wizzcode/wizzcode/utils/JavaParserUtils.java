@@ -9,13 +9,13 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.*;
-import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.resolution.declarations.*;
 import com.github.javaparser.resolution.types.ResolvedType;
 
@@ -53,6 +53,12 @@ public class JavaParserUtils {
             
         }
 
+        else if(node instanceof MethodDeclaration){
+            ResolvedMethodDeclaration resolvedMethod = ((MethodDeclaration) node).resolve();
+            String qualifiedName = resolvedMethod.getQualifiedSignature();
+            return qualifiedName;
+        }
+
         else if(node instanceof MethodCallExpr){
             ResolvedMethodDeclaration methodDeclaration = ((MethodCallExpr) node).resolve();
             return methodDeclaration.getQualifiedName();
@@ -63,6 +69,11 @@ public class JavaParserUtils {
             String nodeQualifiedName = resolvedType.describe() + "." + ((FieldAccessExpr) node).getNameAsString();
             return nodeQualifiedName;
             
+        }
+
+        else if(node instanceof ObjectCreationExpr){
+            System.out.println("OBJECT CREATION:"+((ObjectCreationExpr) node).getType().toString());
+            return ((ObjectCreationExpr) node).getType().toString();
         }
 
         return "";
