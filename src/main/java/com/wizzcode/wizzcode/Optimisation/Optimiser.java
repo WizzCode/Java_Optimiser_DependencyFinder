@@ -485,6 +485,7 @@ public void avoidStringcharAt(){
         // a>2 , there will be only 2 statements , an if and a corresponding else
         // broken code if same variable is used in different ifstmts
         System.out.println("This method is used to detect and offer better suggestions for cascading If Statements");
+        justifications.put("cascading_if","");
         HashMap<String,String> visited = new HashMap<String, String>();
 
         for (IfStmt ifStmt : obj.compilationUnit.findAll(IfStmt.class)) {
@@ -501,6 +502,7 @@ public void avoidStringcharAt(){
                 {
 
                     System.out.println("Ifstmt = " + ifStmt.getCondition() + " line= " + ifStmt.getBegin());
+                    IfStmt parentif = ifStmt;
 
                     visited.put(expression.getChildNodes().get(0).toString(), expression.getChildNodes().toString());
 
@@ -526,6 +528,11 @@ public void avoidStringcharAt(){
                     }
                     if (count > 2) {
                         System.out.println("Depth of if-else statements is " + count + " Avoid using if-else when depth is more than 2. Use switch statement instead");
+                        opti = new ArrayList<>();
+                        opti.add(parentif.toString());
+                        opti.add(parentif.getBegin().get().toString());
+                        opti.add("cascading_if");
+                        optimisations.add(opti); 
                     }
                 }
 

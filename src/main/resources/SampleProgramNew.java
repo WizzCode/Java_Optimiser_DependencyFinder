@@ -9,6 +9,8 @@ public class SampleProgramNew{
         int val2 = obj.f3();
         int val3;
         val3 = 2+obj.f3();
+        Programmer pobj = new Programmer();
+        pobj.display();
     }
 }
 
@@ -37,3 +39,29 @@ public int f3(){
 
 
 }
+
+//Inheritance Example
+
+class Employee{  
+ float salary=40000;  
+ void job(){
+
+System.out.println ("this is an employee");
+
+}
+}  
+
+class Programmer extends Employee{  
+ int bonus=10000;  
+ public void display(){  
+   Programmer p=new Programmer();  
+   System.out.println("Programmer salary is:"+p.salary);  
+   System.out.println("Bonus of Programmer is:"+p.bonus);  
+}  
+  void job(){
+
+System.out.println ("this is a programmer");
+
+}
+  
+}  

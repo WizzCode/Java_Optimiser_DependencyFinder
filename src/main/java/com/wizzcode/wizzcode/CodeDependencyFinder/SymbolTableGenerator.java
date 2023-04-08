@@ -11,6 +11,8 @@ import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
@@ -18,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.wizzcode.wizzcode.utils.JavaParserUtils;
+import com.wizzcode.wizzcode.utils.MethodOverrideDetector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -129,6 +132,18 @@ public class SymbolTableGenerator {
             String methodQualifiedName = jpObj.getQualifiedName(method);
             addToAttributeArray(methodQualifiedName);
         }
+        
+        //List of Overriding Methods
+        VoidVisitor<List<MethodDeclaration>> methodOverrideVisitor = new MethodOverrideDetector(compilationUnit);
+        List <MethodDeclaration> overriders_collector = new ArrayList<>();
+        methodOverrideVisitor.visit(compilationUnit,overriders_collector);
+        List<String> overridingMethodsList = new ArrayList<String>();
+        for (MethodDeclaration method : overriders_collector) {
+            String methodQualifiedName = jpObj.getQualifiedName(method);
+            overridingMethodsList.add(methodQualifiedName);
+        }
+        System.out.println("Overriding Methods");
+        for (String methodname : overridingMethodsList)System.out.println(methodname);
 
         //---------------------LOOP FOR CLASSES---------------------
         for (ClassOrInterfaceDeclaration classOrInterface : compilationUnit.findAll(ClassOrInterfaceDeclaration.class)) {
@@ -136,7 +151,16 @@ public class SymbolTableGenerator {
             //className
             String classOrInterfaceName = classOrInterface.getNameAsString();
             addToAttributeArray(classOrInterfaceName);
-
+            
+            //Extended classes
+            List<ClassOrInterfaceType> extendedTypes = classOrInterface.getExtendedTypes();
+            for(int e =0;e<extendedTypes.size();e++){
+                String extendedClassName = extendedTypes.get(e).getNameAsString();
+                addToRightArray(extendedClassName);
+                addToDependenceDict(classOrInterfaceName,extendedClassName);
+            }
+            
+            
             //---------------------LOOP FOR CLASS VARIABLES---------------------
             for (FieldDeclaration fieldDeclaration : classOrInterface.getFields()) {
                 //fieldDeclaration type contains entire line of code where a class variable has been declared
@@ -222,7 +246,7 @@ public class SymbolTableGenerator {
                     }
                 });
             }
-        }
+    }
         return paObj;
     }
 
