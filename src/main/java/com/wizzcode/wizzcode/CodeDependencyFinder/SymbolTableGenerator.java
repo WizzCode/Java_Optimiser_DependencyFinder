@@ -180,6 +180,14 @@ public class SymbolTableGenerator {
     }
 
     public ProgramAttributes findAttributes() {
+        
+        //adding all class declarations to attribute array
+        List<ClassOrInterfaceDeclaration> classList = compilationUnit.findAll(ClassOrInterfaceDeclaration.class);
+        for (ClassOrInterfaceDeclaration cls : classList) {
+            String className = cls.getNameAsString();
+            addToAttributeArray(className);
+        }
+        
         //adding all method declarations to attribute array
         List<MethodDeclaration> methods = compilationUnit.findAll(MethodDeclaration.class);
         for (MethodDeclaration method : methods) {
@@ -196,7 +204,7 @@ public class SymbolTableGenerator {
             String methodQualifiedName = jpObj.getQualifiedName(method);
             overridingMethodsList.add(methodQualifiedName);
         }
-        System.out.println("Overriding Methods");
+        System.out.println("User Defined Overriding Methods");
         for (String methodname : overridingMethodsList)System.out.println(methodname);
 
         //---------------------LOOP FOR CLASSES---------------------
@@ -210,8 +218,10 @@ public class SymbolTableGenerator {
             List<ClassOrInterfaceType> extendedTypes = classOrInterface.getExtendedTypes();
             for(int e =0;e<extendedTypes.size();e++){
                 String extendedClassName = extendedTypes.get(e).getNameAsString();
+                if (paObj.attribute_array.contains(extendedClassName)){
                 addToRightArray(extendedClassName);
                 addToDependenceDict(classOrInterfaceName,extendedClassName);
+                }
             }
             
             

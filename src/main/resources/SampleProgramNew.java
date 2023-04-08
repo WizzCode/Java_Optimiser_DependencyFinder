@@ -1,4 +1,4 @@
-public class SampleProgramNew{ 
+public class SampleProgramNew extends Thread{
     public static void main(String args[]){
         A obj = new A();
         System.out.println(obj.abc);
@@ -11,6 +11,13 @@ public class SampleProgramNew{
         val3 = 2+obj.f3();
         Programmer pobj = new Programmer();
         pobj.display();
+        SampleProgramNew thread = new SampleProgramNew();
+        thread.start();
+        System.out.println("This code is outside of the thread");
+    }
+    public void run() {
+        int a=9;
+        System.out.println("This code is running in a thread");
     }
 }
 
@@ -64,4 +71,4 @@ System.out.println ("this is a programmer");
 
 }
   
-}  
+}
