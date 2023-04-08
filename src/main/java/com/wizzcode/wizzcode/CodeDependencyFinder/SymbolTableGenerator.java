@@ -1,16 +1,14 @@
 package com.wizzcode.wizzcode.CodeDependencyFinder;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.utils.SourceRoot;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
@@ -101,27 +99,83 @@ public class SymbolTableGenerator {
         return dependencySources;
     }
 
-    private void findDependenciesInRHS(Expression expr, String name, String parentName, ArrayList<String> dependencySources) {
-        String qualifiedName = "";
+    //DEPENDENCY BETWEEN METHOD AND METHOD CALL
+    //parent = qualified name of node that contains methodCall
+    //lhsVariableName = qualified name of LHS if assignment, else pass null
+    private void findDependenciesForMethodCallExpr(MethodCallExpr methodCallExpr, String parent, String lhsVariableName){
+        String methodCallName = jpObj.getQualifiedName(methodCallExpr);
+
+        //if methodCallName is not present in attribute array, the method belongs to an imported class, hence no need to find dependency with it
+        if (paObj.attribute_array.contains(methodCallName)) {
+            addToRightArray(methodCallName);
+            addToDependenceDict(parent, methodCallName);
+            if (lhsVariableName!=null) {
+                addToDependenceDict(lhsVariableName, methodCallName);
+            }
+        }
+    }
+
+    //DEPENDENCY BETWEEN NODE FROM WHERE METHOD IS CALLED AND THE METHOD CALL ARGUMENTS
+    //parent = qualified name of node that contains methodCall
+    //lhsVariableName = qualified name of LHS if assignment, else pass null
+    private void findDependenciesForMethodCallArgs(MethodCallExpr methodCallExpr, String parent, String lhsVariableName){
+        for(Expression expr: methodCallExpr.getArguments()){
+            String argName = jpObj.getQualifiedName(expr);
+            if (!argName.contains(".") && !argName.equals("")){
+                argName = parent + "." + argName;
+            }
+            addToAttributeArray(argName);
+            addToRightArray(argName);
+            addToDependenceDict(parent, argName);
+            if (lhsVariableName!=null) {
+                addToDependenceDict(lhsVariableName, argName);
+            }
+        }
+    }
+
+    //parentName = Node that contains the Expression expr
+    //dependencySources = list of nodes on which qualifiedNameLHS depends
+    private void findDependenciesInRHS(Expression expr, String qualifiedNameLHS, String parentName, ArrayList<String> dependencySources) {
+        String qualifiedNameRHS = "";
         if (expr instanceof MethodCallExpr) {
-            qualifiedName = jpObj.getQualifiedName(expr);
-            addToAttributeArray(qualifiedName);
-            addToRightArray(qualifiedName);
-            addToDependenceDict(name, qualifiedName, dependencySources);
+            findDependenciesForMethodCallExpr((MethodCallExpr)expr, parentName, qualifiedNameLHS);
+            findDependenciesForMethodCallArgs((MethodCallExpr)expr, parentName, qualifiedNameLHS);
         } else if (expr instanceof ObjectCreationExpr) {
-            qualifiedName = jpObj.getQualifiedName(expr);
-            addToAttributeArray(qualifiedName);
-            addToRightArray(qualifiedName);
-            addToDependenceDict(name, qualifiedName, dependencySources);
+            qualifiedNameRHS = jpObj.getQualifiedName(expr);
+            addToAttributeArray(qualifiedNameRHS);
+            addToRightArray(qualifiedNameRHS);
+            addToDependenceDict(qualifiedNameLHS, qualifiedNameRHS, dependencySources);
         } else if (expr instanceof BinaryExpr) {
             ArrayList<Node> subExprList = new ArrayList<>(expr.getChildNodes());
-            dependencySources = evalBinaryExprAttributes(parentName, subExprList, dependencySources);
-            paObj.dependence_dict.put(name, dependencySources);
-        } else {
-            qualifiedName = jpObj.getQualifiedName(expr);
-            addToAttributeArray(qualifiedName);
-            addToRightArray(qualifiedName);
-            addToDependenceDict(name, qualifiedName, dependencySources);
+//            dependencySources = evalBinaryExprAttributes(parentName, subExprList, dependencySources);
+
+            String subExprName;
+            Node subExpr;
+            for (int i = 0; i < subExprList.size(); i++) {
+                subExpr = subExprList.get(i);
+                subExprName = jpObj.getQualifiedName(subExpr);
+                if (!subExprName.contains(".") && !subExprName.equals("")){
+                    subExprName = parentName + "." + subExprName;
+                }
+                addToAttributeArray(subExprName);
+                addToRightArray(subExprName);
+
+                if (subExpr instanceof MethodCallExpr) {
+                    findDependenciesForMethodCallExpr((MethodCallExpr)subExpr, parentName, qualifiedNameLHS);
+                    findDependenciesForMethodCallArgs((MethodCallExpr)subExpr, parentName, qualifiedNameLHS);
+                }
+
+                if (!subExprName.equals("") && !dependencySources.contains(subExprName)){
+                    dependencySources.add(subExprName);
+                }
+            }
+            paObj.dependence_dict.put(qualifiedNameLHS, dependencySources);
+        }
+        else {
+            qualifiedNameRHS = jpObj.getQualifiedName(expr);
+            addToAttributeArray(qualifiedNameRHS);
+            addToRightArray(qualifiedNameRHS);
+            addToDependenceDict(qualifiedNameLHS, qualifiedNameRHS, dependencySources);
         }
     }
 
@@ -188,6 +242,16 @@ public class SymbolTableGenerator {
                 String methodName = jpObj.getQualifiedName(method);
                 addToDependenceDict(classOrInterfaceName, methodName);
 
+                //DECLARATIONS IN PARAMETER
+                NodeList<Parameter> methodParameters = method.getParameters();
+                for(Parameter pr:methodParameters){
+                    String parameterVariableName = methodName + "." + pr.getNameAsExpression();
+                    addToAttributeArray(parameterVariableName);
+                    addToRightArray(parameterVariableName);
+                    addToDependenceDict(methodName, parameterVariableName); //method depends on the variable
+//                System.out.println(jpObj.getQualifiedName(pr.getNameAsExpression()));
+                }
+
                 //DECLARATIONS INSIDE METHOD
                 method.getBody().ifPresent(blockStatement -> {
                     for (VariableDeclarator variable : blockStatement.findAll(VariableDeclarator.class)) {
@@ -227,22 +291,8 @@ public class SymbolTableGenerator {
 
                     //METHOD CALLS INSIDE METHOD
                     for (MethodCallExpr methodCallExpr : blockStatement.findAll(MethodCallExpr.class)) {
-                        String methodCallName = jpObj.getQualifiedName(methodCallExpr);
-
-//                        addToAttributeArray(methodCallName);
-                        if (paObj.attribute_array.contains(methodCallName)) {
-                            addToRightArray(methodCallName);
-                            addToDependenceDict(methodName, methodCallName); //Method depends on called method
-
-                            if (methodCallExpr.isAssignExpr()) {
-                                Expression lhsVariable = methodCallExpr.toAssignExpr().get().getTarget();
-                                String lhsVariableName = jpObj.getQualifiedName(lhsVariable);
-
-                                addToAttributeArray(lhsVariableName);
-                                addToDependenceDict(methodName, lhsVariableName); //method depends on the variable
-                                addToDependenceDict(lhsVariableName, methodCallName);
-                            }
-                        }
+                        findDependenciesForMethodCallExpr(methodCallExpr, methodName, null); //method depends on the called method
+                        findDependenciesForMethodCallArgs(methodCallExpr, methodName, null);
                     }
                 });
             }
