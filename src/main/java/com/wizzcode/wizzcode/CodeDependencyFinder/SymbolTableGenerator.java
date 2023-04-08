@@ -152,7 +152,7 @@ public class SymbolTableGenerator {
                 subExpr = subExprList.get(i);
                 subExprName = jpObj.getQualifiedName(subExpr);
                 if (!subExprName.contains(".") && !subExprName.equals("")){
-                    subExprName = subExprName + "." + subExprName;
+                    subExprName = parentName + "." + subExprName;
                 }
                 addToAttributeArray(subExprName);
                 addToRightArray(subExprName);

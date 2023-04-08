@@ -34,7 +34,7 @@ public class Dependency {
         attributeDependencyAlgo();
         attributeDependencyMatrix();
     }
-    
+
     public void dependencyinput() throws FileNotFoundException, Exception{
 
         SymbolTableGenerator obj = new SymbolTableGenerator();
@@ -96,84 +96,47 @@ public class Dependency {
     }
 
     public void attributeDependencyMatrix() throws Exception{
-        int noVars = attribute_array.size();
-        boolean depMatrix[][] = new boolean[noVars][noVars];
+        int noAttributes = attribute_array.size();
+        int depMatrix[][] = new int[noAttributes][noAttributes];
         ArrayList<String> graphNodes = new ArrayList<>();
-        for (String var: attribute_array){
-            graphNodes.add(var);
+        for (String attribute: attribute_array){
+            graphNodes.add(attribute);
         }
-        String parent="", var="";
-        if (graphNodes.size()!=0){
-            parent = graphNodes.remove(0);
-            var = parent;
-        }
-        while(graphNodes.size()!=0){
-            //checking childs of parent
-            var = parent;
-            ArrayList<String> childs = dependence_dict.get(var);
 
-            if (childs!=null){
-                String child="";
-                for(String c : childs){
-                    if(graphNodes.contains(c)){
-                        graphNodes.remove(c);
-                        child = c;
-                    }
-                    depMatrix[attribute_array.indexOf(c)][attribute_array.indexOf(var)]=true;
-                }
-                if(child==""){
-                    parent = graphNodes.remove(0);
-                }else{
-                    parent = child;
-                }
-            }
-
-            //checking parents of var
-            else{
-                boolean flag = false;
-                for (String key: dependence_dict.keySet()){
-                    if(dependence_dict.get(key).contains(var)){
-                        String child = var;
-                        parent = key;
-                        if (graphNodes.contains(parent)){
-                            graphNodes.remove(parent);
-                        }
-                        depMatrix[attribute_array.indexOf(child)][attribute_array.indexOf(parent)]=true;
-                        flag = true;
-                        break;
-                    }
-                }
-                if(!flag){
-                    if(graphNodes.contains(var)){
-                        graphNodes.remove(var);
-                    }
-                    parent = graphNodes.remove(0);
+        String parent="";
+        for(int i=0;i<graphNodes.size();i++){
+            parent = graphNodes.get(i);
+            if(dependence_dict.containsKey(parent)){
+                ArrayList<String> childs = dependence_dict.get(parent);
+                for(String child: childs){
+                    depMatrix[attribute_array.indexOf(parent)][attribute_array.indexOf(child)]=1;
                 }
             }
         }
 
         System.out.println("Generating Depedency Matrix.......\n");
-        System.out.println("If the value of the matrix at a position\nwhere the row denotes attribute1 and the column denotes attribute2 is 1 \nthen attribute2 is dependent on attribute1\n");
+        System.out.println("If the value of the matrix at a position\nwhere the row denotes attribute1 and the column denotes attribute2 is 1 \nthen attribute1 is dependent on attribute2\n");
         System.out.println("----------------------------------Depenedency Matrix---------------------------------------\n");
 
         System.out.printf("%-5s", "");
         for (int i = 0; i < depMatrix[0].length; i++) {
-        System.out.printf("%-5s", attribute_array.get(i));
+            System.out.printf("%-5s", attribute_array.get(i));
         }
         System.out.println();
         for (int i = 0; i < depMatrix.length; i++){
             // Loop through all elements of current row
             System.out.printf("%-5s", attribute_array.get(i));
             for (int j = 0; j < depMatrix[i].length; j++){
-                if(depMatrix[i][j]==false) System.out.printf("%-5d",0);
-                else System.out.printf("%-5d",1);
+                System.out.printf("%-5d",depMatrix[i][j]);
             }
             System.out.println("\n");
         }
-TransitivityMatrix(depMatrix);
+
+//        TransitivityMatrix(depMatrix);
+        exportToExcel(depMatrix);
     }
 
-    public void TransitivityMatrix(boolean depMatrix[][]) throws Exception
+    public void TransitivityMatrix(int depMatrix[][]) throws Exception
     {
         int dimension = depMatrix.length;
         boolean newMatrix[][] = new boolean [dimension][dimension];
@@ -182,32 +145,32 @@ TransitivityMatrix(depMatrix);
             Arrays.fill(newMatrix[i], false);
             Arrays.fill(newMatrixInt[i], 0);
         }
-for(int i=0;i<depMatrix[0].length;i++) // i attribute iterates through columns
-{
-    for(int j=0;j<depMatrix.length;j++) // j attribute iterates through rows
-    {
-if((depMatrix[j][i]==true)) //only performing analysis on dependencyMatrix
-{
-    newMatrix[j][i]=true; //we need to show the original dependency as well in the transitive dependency
-    newMatrixInt[j][i]=1;
-  boolean lenarr[]  =depMatrix[i];
-  for(int k=0;k<lenarr.length;k++)
-  {
-      if(lenarr[k]==true)
-      {
-          newMatrix[j][k]=true;
-          newMatrixInt[j][k]=1;
-      }
-  }
+        for(int i=0;i<depMatrix[0].length;i++) // i attribute iterates through columns
+        {
+            for(int j=0;j<depMatrix.length;j++) // j attribute iterates through rows
+            {
+                if((depMatrix[j][i]==1)) //only performing analysis on dependencyMatrix
+                {
+                    newMatrix[j][i]=true; //we need to show the original dependency as well in the transitive dependency
+                    newMatrixInt[j][i]=1;
+                    int lenarr[]  =depMatrix[i];
+                    for(int k=0;k<lenarr.length;k++)
+                    {
+                        if(lenarr[k]==1)
+                        {
+                            newMatrix[j][k]=true;
+                            newMatrixInt[j][k]=1;
+                        }
+                    }
 
-}
-    }
-}
+                }
+            }
+        }
 
 //print new matrix here
 
         System.out.println("---------Transitive Dependency Matrix-------------");
-System.out.println(" ");
+        System.out.println(" ");
         System.out.printf("%-5s", "");
         for (int i = 0; i < newMatrix[0].length; i++) {
             System.out.printf("%-5s", attribute_array.get(i));
@@ -222,9 +185,9 @@ System.out.println(" ");
             }
             System.out.println("\n");
         }
+    }
 
-
-//         export to excel
+    private void exportToExcel(int matrix[][]) throws Exception{
         Workbook workbook = new Workbook();
 
         // Obtaining the reference of the worksheet
@@ -234,10 +197,8 @@ System.out.println(" ");
         cells.importArray(title, 0, 0, true);
         cells.importArrayList(attribute_array,0,1, false);
         cells.importArrayList(attribute_array,1,0, true);
-        cells.importArray(newMatrixInt, 1, 1);
-//        workbook.save("D:\\mahi\\SEM-VII\\LY-Project\\JavaDependencyFinder\\output.xlsx");
+        cells.importArray(matrix, 1, 1);
         workbook.save("src/main/resources/output.xlsx");
-
     }
 
 }
