@@ -6,7 +6,6 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.resolution.declarations.ResolvedClassDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
-import com.wizzcode.wizzcode.CodeDependencyFinder.SymbolTableGenerator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +45,7 @@ public MethodOverrideDetector (CompilationUnit compilationUnit) {
                    
                      // Find the superclass of method
                    
-                    System.out.println("SuperClass: "+ancestorName);
+//                    System.out.println("SuperClass: "+ancestorName);
 
                    Optional<ClassOrInterfaceDeclaration> supClassOpt = cu.findFirst(ClassOrInterfaceDeclaration.class,
                 node -> node.getNameAsString().equals(ancestorName));
@@ -59,7 +58,7 @@ public MethodOverrideDetector (CompilationUnit compilationUnit) {
                                 .anyMatch(m -> m.getNameAsString().equals(md.getNameAsString())
                                         && m.getParameters().equals(md.getParameters()));
                         if (overridden) {
-                            System.out.println("Method " + md.getName() + " overrides method of superclass " + supClass.getName());
+//                            System.out.println("Method " + md.getName() + " overrides method of superclass " + supClass.getName());
                             collector.add(md);
                             break;
                         }
@@ -67,11 +66,10 @@ public MethodOverrideDetector (CompilationUnit compilationUnit) {
                 }
                  
             }
-            if (!overridden) {
-                System.out.println("Method " + md.getName() + " is not overridden");
-            }
+//            if (!overridden) {
+//                System.out.println("Method " + md.getName() + " is not overridden");
+//            }
         }
-        System.out.println("------------------------");
         super.visit(md,collector);
     }
 }
