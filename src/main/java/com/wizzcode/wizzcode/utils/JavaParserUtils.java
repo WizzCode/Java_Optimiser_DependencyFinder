@@ -61,7 +61,8 @@ public class JavaParserUtils {
 
         else if(node instanceof MethodCallExpr){
             ResolvedMethodDeclaration methodDeclaration = ((MethodCallExpr) node).resolve();
-            return methodDeclaration.getQualifiedName();
+            return  methodDeclaration.getQualifiedSignature();
+//            return methodDeclaration.getQualifiedName();
         }
         
         else if(node instanceof FieldAccessExpr){
@@ -72,7 +73,6 @@ public class JavaParserUtils {
         }
 
         else if(node instanceof ObjectCreationExpr){
-            System.out.println("OBJECT CREATION:"+((ObjectCreationExpr) node).getType().toString());
             return ((ObjectCreationExpr) node).getType().toString();
         }
 
