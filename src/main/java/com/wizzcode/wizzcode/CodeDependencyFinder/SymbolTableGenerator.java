@@ -22,6 +22,7 @@ import com.wizzcode.wizzcode.utils.MethodOverrideDetector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class SymbolTableGenerator {
     public CompilationUnit cu;
@@ -296,8 +297,55 @@ public class SymbolTableGenerator {
                     }
                 });
             }
-    }
+        }
+
+        //---------------------THREADS---------------------
+        detectThread();
+
+        for (Map.Entry<String, ArrayList<String>> entry : paObj.dependence_dict.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
         return paObj;
+    }
+
+    private void detectThread(){
+        // Traverse the AST and identify classes that extend or implement Thread or Runnable
+        List<ClassOrInterfaceDeclaration> classOrInterfaceDeclns = compilationUnit.findAll(ClassOrInterfaceDeclaration.class);
+        for (ClassOrInterfaceDeclaration classOrInterfaceDecln : classOrInterfaceDeclns) {
+            if (classOrInterfaceDecln.isAbstract()) {
+                continue;
+            }
+
+            Boolean extendsThread = classOrInterfaceDecln.getExtendedTypes().stream().anyMatch(t -> t.getNameAsString().equals("Thread"));
+            Boolean implementsRunnable = classOrInterfaceDecln.getImplementedTypes().stream().anyMatch(t -> t.getNameAsString().equals("Runnable"));
+
+            if(extendsThread || implementsRunnable){
+                // Check if the class overrides the run() method
+                List<MethodDeclaration> runMethodList = classOrInterfaceDecln.getMethodsByName("run");
+                if (runMethodList.size() > 0) {
+                    String methodQualifiedName;
+                    for(MethodDeclaration runMethod: runMethodList){
+                        methodQualifiedName = jpObj.getQualifiedName(runMethod);
+                        //Add "thread" label to methodQualifiedName
+                    }
+                }
+
+                // Check for explicit calls to start() method
+                for (MethodDeclaration methodDecln : classOrInterfaceDecln.getMethods()) {
+                    String methodQualifiedName = jpObj.getQualifiedName(methodDecln);
+                    List<MethodCallExpr> startCalls = methodDecln.findAll(MethodCallExpr.class, m -> m.getName().getIdentifier().equals("start"));
+                    if (startCalls.size() > 0) {
+                        //Add "thread" label to methodQualifiedName
+                    }
+                }
+            }
+
+//             Check for synchronized blocks or methods
+//            List<SynchronizedStmt> syncStmts = classDecl.findAll(SynchronizedStmt.class);
+//            if (syncStmts.size() > 0) {
+//                System.out.println("Class " + classDecl.getName() + " has synchronized blocks or methods");
+//            }
+        }
     }
 
     public static boolean isStringOnlyAlphabet(String str) {
