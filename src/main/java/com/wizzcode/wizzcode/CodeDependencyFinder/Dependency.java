@@ -14,6 +14,9 @@ public class Dependency {
     public ArrayList<String> right=new ArrayList<String>();
     public HashMap<String,ArrayList<String>> dependence_dict = new HashMap<String,ArrayList<String>>();
     public String path;
+    Map<Integer, Map<String, String>> IdgraphNodes = new LinkedHashMap<>();
+    Map<Integer,int[] > depArray = new LinkedHashMap<>();
+    
 //    public static void main(String[] args) throws FileNotFoundException, Exception {
 //
 //        Dependency vdobj = new Dependency();
@@ -33,6 +36,14 @@ public class Dependency {
         dependencyinput();
         attributeDependencyAlgo();
         attributeDependencyMatrix();
+//        for (Map.Entry<Integer, Map<String,String>> entry : IdgraphNodes.entrySet()) {
+//            System.out.println(entry.getKey() + ": " + entry.getValue());
+//        }
+//        System.out.println(IdgraphNodes.size());
+//        for (Map.Entry<Integer, int[]> entry : depArray.entrySet()) {
+//            System.out.println(entry.getKey() + ": " + Arrays.toString(entry.getValue()));
+//        }
+//        System.out.println(depArray.size());
     }
 
     public void dependencyinput() throws FileNotFoundException, Exception{
@@ -40,10 +51,11 @@ public class Dependency {
         SymbolTableGenerator obj = new SymbolTableGenerator();
         obj.symbolsolverparsing(this.path);
         ProgramAttributes obj2=  obj.findAttributes();
+        IdgraphNodes = obj.getGraphNodes();
         attribute_array=obj2.attribute_array;
         right=obj2.right;
         dependence_dict=obj2.dependence_dict;
-
+        
     }
 
     public void attributeDependencyAlgo() throws Exception{
@@ -126,12 +138,13 @@ public class Dependency {
         for (int i = 0; i < depMatrix.length; i++){
             // Loop through all elements of current row
             System.out.printf("%-5s", attribute_array.get(i));
+            depArray.put(i,depMatrix[i]);
             for (int j = 0; j < depMatrix[i].length; j++){
                 System.out.printf("%-5d",depMatrix[i][j]);
             }
             System.out.println("\n");
         }
-
+        
 //        TransitivityMatrix(depMatrix);
         exportToExcel(depMatrix);
     }
@@ -199,6 +212,14 @@ public class Dependency {
         cells.importArrayList(attribute_array,1,0, true);
         cells.importArray(matrix, 1, 1);
         workbook.save("src/main/resources/output.xlsx");
+    }
+    
+    public Map<Integer, Map<String, String>> getNodes() {
+        return IdgraphNodes;
+    }
+
+    public Map<Integer, int[]> getDepArray() {
+        return depArray;
     }
 
 }

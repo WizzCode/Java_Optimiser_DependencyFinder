@@ -21,6 +21,7 @@ import com.wizzcode.wizzcode.utils.JavaParserUtils;
 import com.wizzcode.wizzcode.utils.MethodOverrideDetector;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +34,8 @@ public class SymbolTableGenerator {
     public CompilationUnit compilationUnit;
     ProgramAttributes paObj = new ProgramAttributes();
     JavaParserUtils jpObj = new JavaParserUtils();
+    Map<String, Map<String, String>> graphNodes = new LinkedHashMap<>();
+    Map<Integer, Map<String, String>> IdgraphNodes = new LinkedHashMap<>();
 
     public void symbolsolverparsing(String path) throws FileNotFoundException {
         System.out.println("Creating Compilation Unit");
@@ -50,6 +53,22 @@ public class SymbolTableGenerator {
         FileInputStream in = new FileInputStream(path);
         parseResultcompilationUnit = this.parser.parse(in);
         compilationUnit = parseResultcompilationUnit.getResult().get();
+    }
+    
+    private void addNode(String name, String level, String type, String over, String thread){
+        int id;
+        if (!name.equals("") && !graphNodes.containsKey(name)) {
+        id = graphNodes.size();
+        Map<String, String> node = new LinkedHashMap<>();
+        node.put("name",name);
+        node.put("level",level);
+        node.put("primaryType",type);
+        node.put("overriding",over);
+        node.put("thread",thread);
+        int index = graphNodes.size();
+        graphNodes.put(name,node);
+        }
+       
     }
 
     private void addToAttributeArray(String name){
@@ -84,22 +103,6 @@ public class SymbolTableGenerator {
         paObj.dependence_dict.put(dependentNode, dependencySources);
     }
 
-    private ArrayList<String> evalBinaryExprAttributes(String methodName, ArrayList<Node> subExprList, ArrayList<String> dependencySources) {
-        String name;
-        for (int i = 0; i < subExprList.size(); i++) {
-            name = jpObj.getQualifiedName(subExprList.get(i));
-            if (!name.contains(".") && !name.equals("")){
-                name = methodName + "." + name;
-            }
-            addToAttributeArray(name);
-            addToRightArray(name);
-            if (!name.equals("") && !dependencySources.contains(name)){
-                dependencySources.add(name);
-            }
-        }
-        return dependencySources;
-    }
-
     //DEPENDENCY BETWEEN METHOD AND METHOD CALL
     //parent = qualified name of node that contains methodCall
     //lhsVariableName = qualified name of LHS if assignment, else pass null
@@ -124,7 +127,10 @@ public class SymbolTableGenerator {
             String argName = jpObj.getQualifiedName(expr);
             if (!argName.contains(".") && !argName.equals("")){
                 argName = parent + "." + argName;
+                addNode(argName, "4", "variable", "n", "n");
             }
+            else addNode(argName, "2", "classVariable", "n", "n");
+            
             addToAttributeArray(argName);
             addToRightArray(argName);
             addToDependenceDict(parent, argName);
@@ -144,6 +150,7 @@ public class SymbolTableGenerator {
         } else if (expr instanceof ObjectCreationExpr) {
             qualifiedNameRHS = jpObj.getQualifiedName(expr);
             addToAttributeArray(qualifiedNameRHS);
+            addNode(qualifiedNameRHS, "2", "classVariable", "n", "n");
             addToRightArray(qualifiedNameRHS);
             addToDependenceDict(qualifiedNameLHS, qualifiedNameRHS, dependencySources);
         } else if (expr instanceof BinaryExpr) {
@@ -157,7 +164,10 @@ public class SymbolTableGenerator {
                 subExprName = jpObj.getQualifiedName(subExpr);
                 if (!subExprName.contains(".") && !subExprName.equals("")){
                     subExprName = parentName + "." + subExprName;
+                    addNode(subExprName, "4", "variable", "n", "n");
                 }
+                else addNode(subExprName, "2", "classVariable", "n", "n");
+                
                 addToAttributeArray(subExprName);
                 addToRightArray(subExprName);
 
@@ -175,6 +185,7 @@ public class SymbolTableGenerator {
         else {
             qualifiedNameRHS = jpObj.getQualifiedName(expr);
             addToAttributeArray(qualifiedNameRHS);
+            addNode(qualifiedNameRHS, "2", "classVariable", "n", "n");
             addToRightArray(qualifiedNameRHS);
             addToDependenceDict(qualifiedNameLHS, qualifiedNameRHS, dependencySources);
         }
@@ -187,14 +198,9 @@ public class SymbolTableGenerator {
         for (ClassOrInterfaceDeclaration cls : classList) {
             String className = cls.getNameAsString();
             addToAttributeArray(className);
+            addNode(className, "1", "class", "n", "n");
         }
         
-        //adding all method declarations to attribute array
-        List<MethodDeclaration> methods = compilationUnit.findAll(MethodDeclaration.class);
-        for (MethodDeclaration method : methods) {
-            String methodQualifiedName = jpObj.getQualifiedName(method);
-            addToAttributeArray(methodQualifiedName);
-        }
         
         //List of Overriding Methods
         VoidVisitor<List<MethodDeclaration>> methodOverrideVisitor = new MethodOverrideDetector(compilationUnit);
@@ -205,8 +211,19 @@ public class SymbolTableGenerator {
             String methodQualifiedName = jpObj.getQualifiedName(method);
             overridingMethodsList.add(methodQualifiedName);
         }
-        System.out.println("User Defined Overriding Methods");
-        for (String methodname : overridingMethodsList)System.out.println(methodname);
+        
+         //adding all method declarations to attribute array
+        List<MethodDeclaration> methods = compilationUnit.findAll(MethodDeclaration.class);
+        for (MethodDeclaration method : methods) {
+            String methodQualifiedName = jpObj.getQualifiedName(method);
+            String access = method.getAccessSpecifier().asString();
+            if(access.isEmpty()) access ="default";
+            String overFlag;
+            addToAttributeArray(methodQualifiedName);
+            if(overridingMethodsList.contains(methodQualifiedName)) overFlag = "y";
+            else overFlag = "n";
+            addNode(methodQualifiedName, "3", access + "Method", overFlag, "n");
+        }
 
         //---------------------LOOP FOR CLASSES---------------------
         for (ClassOrInterfaceDeclaration classOrInterface : compilationUnit.findAll(ClassOrInterfaceDeclaration.class)) {
@@ -214,7 +231,7 @@ public class SymbolTableGenerator {
             //className
             String classOrInterfaceName = classOrInterface.getNameAsString();
             addToAttributeArray(classOrInterfaceName);
-            
+            addNode(classOrInterfaceName, "1", "class", "n", "n");
             //Extended classes
             List<ClassOrInterfaceType> extendedTypes = classOrInterface.getExtendedTypes();
             for(int e =0;e<extendedTypes.size();e++){
@@ -235,6 +252,7 @@ public class SymbolTableGenerator {
                     String fieldName = classOrInterfaceName + "." + fieldDeclarationAsVD.getName();
 
                     addToAttributeArray(fieldName);
+                    addNode(fieldName, "2", "classVariable", "n", "n");
                     addToDependenceDict(classOrInterfaceName, fieldName); //class depends on the field
 
                     if (fieldDeclarationAsVD.getInitializer().isPresent()) {
@@ -258,6 +276,7 @@ public class SymbolTableGenerator {
                 for(Parameter pr:methodParameters){
                     String parameterVariableName = methodName + "." + pr.getNameAsExpression();
                     addToAttributeArray(parameterVariableName);
+                    addNode(parameterVariableName, "4", "variable", "n", "n");
                     addToRightArray(parameterVariableName);
                     addToDependenceDict(methodName, parameterVariableName); //method depends on the variable
 //                System.out.println(jpObj.getQualifiedName(pr.getNameAsExpression()));
@@ -269,6 +288,7 @@ public class SymbolTableGenerator {
                         String lhsDeclarationName = methodName + "." + variable.getNameAsString();
 
                         addToAttributeArray(lhsDeclarationName);
+                        addNode(lhsDeclarationName, "4", "variable", "n", "n");
                         addToDependenceDict(methodName, lhsDeclarationName); //method depends on the variable
 
                         if (variable.getInitializer().isPresent()) {
@@ -287,7 +307,9 @@ public class SymbolTableGenerator {
                         String lhsVariableName = jpObj.getQualifiedName(lhsVariable);
                         if (!lhsVariableName.contains(".") && !lhsVariableName.equals("")) {
                             lhsVariableName = methodName + "." + lhsVariableName;
+                            addNode(lhsVariableName, "4", "variable", "n", "n");
                         }
+                        else addNode(lhsVariableName, "2", "classVariable", "n", "n");
 
                         addToAttributeArray(lhsVariableName);
                         addToDependenceDict(methodName, lhsVariableName); //method depends on the variable
@@ -312,12 +334,27 @@ public class SymbolTableGenerator {
         //---------------------THREADS---------------------
         detectThread();
 
-        for (Map.Entry<String, ArrayList<String>> entry : paObj.dependence_dict.entrySet()) {
-            System.out.println(entry.getKey() + ": " + entry.getValue());
+        int id = 0;
+        for (Map.Entry<String, Map<String,String>> entry : graphNodes.entrySet()) {
+            IdgraphNodes.put(id,  entry.getValue());
+            id++;
         }
+//        for (Map.Entry<Integer, Map<String,String>> entry : IdgraphNodes.entrySet()) {
+//            System.out.println(entry.getKey() + ": " + entry.getValue());
+//        }
+//        System.out.println(IdgraphNodes.size());
+        
         return paObj;
+        
+        
     }
-
+    
+    
+    //send hashmap to dependency.java
+    public Map<Integer, Map<String, String>> getGraphNodes(){
+        return IdgraphNodes;
+    }
+    
     private void detectThread(){
         // Traverse the AST and identify classes that extend or implement Thread or Runnable
         List<ClassOrInterfaceDeclaration> classOrInterfaceDeclns = compilationUnit.findAll(ClassOrInterfaceDeclaration.class);
@@ -336,7 +373,10 @@ public class SymbolTableGenerator {
                     String methodQualifiedName;
                     for(MethodDeclaration runMethod: runMethodList){
                         methodQualifiedName = jpObj.getQualifiedName(runMethod);
-                        //Add "thread" label to methodQualifiedName
+                        Map<String, String> threadnode = new LinkedHashMap<>();
+                        threadnode = graphNodes.get(methodQualifiedName);
+                        threadnode.replace("thread","y");
+                        graphNodes.replace(methodQualifiedName, threadnode);
                     }
                 }
 
@@ -345,7 +385,10 @@ public class SymbolTableGenerator {
                     String methodQualifiedName = jpObj.getQualifiedName(methodDecln);
                     List<MethodCallExpr> startCalls = methodDecln.findAll(MethodCallExpr.class, m -> m.getName().getIdentifier().equals("start"));
                     if (startCalls.size() > 0) {
-                        //Add "thread" label to methodQualifiedName
+                        Map<String, String> threadnode = new LinkedHashMap<>();
+                        threadnode = graphNodes.get(methodQualifiedName);
+                        threadnode.replace("thread","y");
+                        graphNodes.replace(methodQualifiedName, threadnode);
                     }
                 }
             }
