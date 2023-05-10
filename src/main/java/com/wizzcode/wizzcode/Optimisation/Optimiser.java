@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import com.wizzcode.wizzcode.Optimisation.IfStmtVisitor;
+
 //This class contains different methods for optimisation.
 
 public class Optimiser  {
@@ -222,9 +224,14 @@ public class Optimiser  {
       System.out.println("This method is used for detecting empty if blocks");
       justifications.put("empty_if","");
       flag = 2;
-      VoidVisitor<List<Expression>> ifStmtVisitor = new IfStmtVisitor();
+//      VoidVisitor<List<Expression>> ifStmtVisitor = new IfStmtVisitor();
+      IfStmtVisitor ifStmtVisitor = new IfStmtVisitor();
       List <Expression> collector = new ArrayList<>();
       ifStmtVisitor.visit(obj.compilationUnit,collector);
+      List<List<String>> emptyIfList = ifStmtVisitor.getOptimisations();
+      for(List<String> opti: emptyIfList){
+          optimisations.add(opti);
+      }
 
 
    }
