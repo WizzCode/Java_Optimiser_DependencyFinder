@@ -25,7 +25,7 @@ public class IfStmtVisitor extends VoidVisitorAdapter<List<Expression>>{
 
         Optimiser obj = new Optimiser("");
         flag = obj.flag;
-        optimisations = obj.optimisations;
+//        optimisations = obj.optimisations;
         opti = obj.opti;
        //System.out.println("reached here");
         if(flag==2){
@@ -62,7 +62,7 @@ public class IfStmtVisitor extends VoidVisitorAdapter<List<Expression>>{
         
          }
 
-    public List<String> getOpti() {
-        return opti;
+    public List<List<String>> getOptimisations() {
+        return optimisations;
     }
 }

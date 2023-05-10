@@ -16,6 +16,7 @@ public class Dependency {
     public String path;
     Map<Integer, Map<String, String>> IdgraphNodes = new LinkedHashMap<>();
     Map<Integer,int[] > depArray = new LinkedHashMap<>();
+    Map<Integer,int[] > transDepArray = new LinkedHashMap<>();
     
 //    public static void main(String[] args) throws FileNotFoundException, Exception {
 //
@@ -144,9 +145,9 @@ public class Dependency {
             }
             System.out.println("\n");
         }
-        
-//        TransitivityMatrix(depMatrix);
-//        exportToExcel(depMatrix);
+
+        int[][] transMatrix = generateTransitiveMatrix(depMatrix);
+//        exportToExcel(transMatrix);
     }
 
     public void TransitivityMatrix(int depMatrix[][]) throws Exception
@@ -200,6 +201,37 @@ public class Dependency {
         }
     }
 
+    public int[][] generateTransitiveMatrix(int depMatrix[][]) throws Exception {
+        int dimension = depMatrix.length;
+        int transMatrix[][] = new int[dimension][dimension];
+        for (int i=0; i<dimension; i++) {
+            for (int j=0; j<dimension; j++) {
+                transMatrix[i][j] = depMatrix[i][j];
+            }
+        }
+        for (int k = 0; k < dimension; k++) {
+            // Pick all vertices as source one by one
+            for (int i = 0; i < dimension; i++) {
+                // Pick all vertices as destination for the above picked source
+                for (int j = 0; j < dimension; j++) {
+                    // If vertex k is on a path from i to j,
+                    // then the value of transMatrix[i][j] is 1
+                    if(i!=j){
+                        transMatrix[i][j] = (transMatrix[i][j]!=0) ||
+                                ((transMatrix[i][k]!=0) && (transMatrix[k][j]!=0))?1:0;
+                    }
+                }
+            }
+        }
+
+        //put to transDepArray
+        for (int i = 0; i < dimension; i++){
+            transDepArray.put(i,transMatrix[i]);
+        }
+
+        return transMatrix;
+    }
+
     private void exportToExcel(int matrix[][]) throws Exception{
         Workbook workbook = new Workbook();
 
@@ -222,4 +254,7 @@ public class Dependency {
         return depArray;
     }
 
+    public Map<Integer, int[]> getTransDepArray() {
+        return transDepArray;
+    }
 }

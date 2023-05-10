@@ -228,7 +228,10 @@ public class Optimiser  {
       IfStmtVisitor ifStmtVisitor = new IfStmtVisitor();
       List <Expression> collector = new ArrayList<>();
       ifStmtVisitor.visit(obj.compilationUnit,collector);
-      optimisations.add(ifStmtVisitor.getOpti());
+      List<List<String>> emptyIfList = ifStmtVisitor.getOptimisations();
+      for(List<String> opti: emptyIfList){
+          optimisations.add(opti);
+      }
 
 
    }
