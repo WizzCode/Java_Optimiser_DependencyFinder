@@ -62,4 +62,7 @@ public class IfStmtVisitor extends VoidVisitorAdapter<List<Expression>>{
         
          }
 
+    public List<String> getOpti() {
+        return opti;
+    }
 }

@@ -146,7 +146,7 @@ public class Dependency {
         }
         
 //        TransitivityMatrix(depMatrix);
-        exportToExcel(depMatrix);
+//        exportToExcel(depMatrix);
     }
 
     public void TransitivityMatrix(int depMatrix[][]) throws Exception
